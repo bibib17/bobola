@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#090d16">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>BolaBola - Turn-Based Physics Tabletop Soccer</title>
+  
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- MASTER CONTAINER (AUTO-LANDSCAPE ADAPTIVE) -->
+  <main id="game-wrapper">
+
+    <!-- TOP BAR: SCOREBOARD, STATUS & ACTIONS -->
+    <header class="top-bar">
+      <!-- Tim Merah (The Strikers) -->
+      <div class="team-badge red">
+        <div class="team-icon">🔴</div>
+        <div class="team-info">
+          <span class="team-name" id="label-team-red">The Strikers</span>
+          <span class="team-score" id="score-red">0</span>
+        </div>
+      </div>
+
+      <!-- Turn Counter, Title & Status -->
+      <div class="match-center">
+        <div class="turn-pill" id="turn-counter">1 / 90 TURNS</div>
+        <div class="game-title" id="hud-match-title">⚡ BOLABOLA LEAGUE</div>
+        <div class="sudden-death-pill hidden" id="sudden-death-pill">⚡ SUDDEN DEATH ⚡</div>
+      </div>
+
+      <!-- Tim Biru (The Rovers) -->
+      <div class="team-badge blue">
+        <div class="team-icon">🔵</div>
+        <div class="team-info">
+          <span class="team-name" id="label-team-blue">The Rovers</span>
+          <span class="team-score" id="score-blue">0</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="top-actions">
+        <button id="btn-home" class="icon-btn" title="Kembali ke Menu Utama (Home)" aria-label="Menu Utama">🏠</button>
+        <button id="btn-share-room" class="icon-btn hidden" title="Salin Link Room (Multiplayer)" aria-label="Bagikan Room">🔗</button>
+        <button id="btn-stats" class="icon-btn" title="Statistik Pertandingan (Tab)" aria-label="Statistik">📊</button>
+        <button id="btn-settings" class="icon-btn" title="Pengaturan Game (Esc)" aria-label="Pengaturan">⚙️</button>
+        <button id="btn-mute" class="icon-btn" title="Nyalakan / Matikan Suara (M)" aria-label="Mute Audio">🔊</button>
+        <button id="btn-fullscreen" class="icon-btn" title="Layar Penuh" aria-label="Fullscreen">⛶</button>
+      </div>
+    </header>
+
+    <!-- ARENA CANVAS CONTAINER -->
+    <section class="arena-container">
+      <canvas id="game-canvas" width="960" height="540"></canvas>
+    </section>
+
+    <!-- BOTTOM BAR: ROSTER STATUS & LOCK-IN READY -->
+    <footer class="bottom-bar">
+      <!-- Roster Tim Merah (4 Pemain) -->
+      <div class="roster-group" title="Status Pemain Tim Merah">
+        <div id="dot-rocco" class="roster-dot red-team" title="Rocco #8">8</div>
+        <div id="dot-ziggy" class="roster-dot red-team" title="Ziggy #5">5</div>
+        <div id="dot-milo" class="roster-dot red-team" title="Milo #6">6</div>
+        <div id="dot-boris" class="roster-dot red-team" title="Boris #7">7</div>
+      </div>
+
+      <!-- Timer & Active Character Info -->
+      <div class="bottom-center">
+        <div class="active-char-badge">
+          <span>Koin Aktif:</span>
+          <span class="active-char-name" id="active-char-name">Ziggy #5</span>
+          <span id="active-char-role">(Striker)</span>
+          <span id="active-char-buff" class="active-char-buff hidden"></span>
+        </div>
+        <div class="timer-bar-container">
+          <div id="timer-bar-fill"></div>
+        </div>
+        <div class="timer-text">Sisa Waktu: <span id="timer-seconds">12s</span></div>
+      </div>
+
+      <!-- Roster Tim Biru (4 Pemain) -->
+      <div class="roster-group" title="Status Pemain Tim Biru">
+        <div id="dot-kiki" class="roster-dot blue-team" title="Kiki #3">3</div>
+        <div id="dot-trixie" class="roster-dot blue-team" title="Trixie #1">1</div>
+        <div id="dot-spike" class="roster-dot blue-team" title="Spike #4">4</div>
+        <div id="dot-ollie" class="roster-dot blue-team" title="Ollie #2">2</div>
+      </div>
+
+      <!-- Tombol Lock-In Ready Besar (Thumb Friendly 54px) -->
+      <button id="btn-ready" class="btn-ready-lock">
+        <span>READY ✓</span>
+      </button>
+    </footer>
+
+  </main>
+
+  <!-- SCREEN 1: MAIN LOBBY & MODE SELECTOR -->
+  <div id="lobby-screen" class="overlay-screen">
+    <div class="lobby-card">
+      <div class="brand-badge">⚡ TABLETOP PHYSICS SOCCER</div>
+      <h1 class="lobby-title">BOLABOLA LEAGUE</h1>
+      <p class="lobby-subtitle">Turn-Based Simultan 2 Tim • 8 Koin Simbolik • Fisika Meja 60 FPS</p>
+
+      <div class="mode-grid">
+        <!-- Mode 1: Solo vs Bot AI -->
+        <div class="mode-card active" data-mode="SOLO" id="mode-solo">
+          <div class="mode-icon">🤖</div>
+          <div class="mode-info">
+            <h3 class="mode-name">Solo Match vs AI</h3>
+            <p class="mode-desc">Kendalikan karakter pilihanmu melawan 7 bot taktis cerdas.</p>
+          </div>
+          <div class="mode-tag">REKOMENDASI</div>
+        </div>
+
+        <!-- Mode 2: Local Pass & Play -->
+        <div class="mode-card" data-mode="LOCAL_2P" id="mode-local">
+          <div class="mode-icon">👥</div>
+          <div class="mode-info">
+            <h3 class="mode-name">Pass & Play (2 Pemain)</h3>
+            <p class="mode-desc">Main berdua bergantian di 1 perangkat (Tablet, Laptop, HP).</p>
+          </div>
+          <div class="mode-tag">1 DEVICE</div>
+        </div>
+
+        <!-- Mode 3: Online Room Multiplayer -->
+        <div class="mode-card" data-mode="ONLINE" id="mode-online">
+          <div class="mode-icon">🌐</div>
+          <div class="mode-info">
+            <h3 class="mode-name">Online Room (Multiplayer)</h3>
+            <p class="mode-desc">Buat atau gabung room online bersama teman (4-8 pemain).</p>
+          </div>
+          <div class="mode-tag">WEBSOCKET</div>
+        </div>
+      </div>
+
+      <!-- Online Room Settings Form (Muncul jika mode ONLINE dipilih) -->
+      <div id="online-room-inputs" class="online-inputs-box hidden">
+        <input type="text" id="input-player-name" placeholder="Nama Pemain Kamu (cth: Budi)" maxlength="12" class="text-input" value="Player 1" />
+        <div class="room-code-input-row">
+          <input type="text" id="input-room-code" placeholder="KODE ROOM (cth: BOLA1)" maxlength="6" class="text-input uppercase" />
+          <button id="btn-random-code" class="btn-icon-addon" title="Buat Kode Acak">🎲</button>
+        </div>
+        <div class="online-buttons">
+          <button id="btn-create-room" class="btn-primary">BUAT ROOM BARU 🏠</button>
+          <button id="btn-join-room" class="btn-secondary">GABUNG ROOM 🔑</button>
+        </div>
+      </div>
+
+      <div class="lobby-action-row" id="lobby-action-row-solo">
+        <button id="btn-proceed-customizer" class="btn-primary-large">
+          LANJUT KE PEMILIHAN TIM & KOIN ➔
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: CHARACTER & DYNAMIC TEAM KIT SELECTOR -->
+  <div id="character-select-screen" class="overlay-screen hidden">
+    <div class="selector-card">
+      <div class="selector-header">
+        <h2 class="selector-title">PILIH TIM & KOIN KAMU</h2>
+        <p class="selector-subtitle">Warna koin dan simbol otomatis berganti sesuai tim yang kamu bela!</p>
+      </div>
+
+      <!-- Team Switcher Pill -->
+      <div class="team-switcher-container">
+        <button id="btn-pick-red" class="team-pill-btn active red">
+          <span>🔴 TIM MERAH</span>
+          <small>The Strikers</small>
+        </button>
+        <button id="btn-pick-blue" class="team-pill-btn blue">
+          <span>🔵 TIM BIRU</span>
+          <small>The Rovers</small>
+        </button>
+      </div>
+
+      <!-- 8 Characters Carousel / Grid -->
+      <div class="character-grid" id="char-selection-grid">
+        <!-- 8 Karakter di-render secara dinamis via JS -->
+      </div>
+
+      <!-- Detail Card Karakter Terpilih dengan Live Spring Preview -->
+      <div class="char-detail-preview">
+        <div class="preview-canvas-box">
+          <canvas id="preview-canvas" width="130" height="130"></canvas>
+          <span class="preview-hint">Sentuh / hover untuk goyang!</span>
+        </div>
+        <div class="preview-stats-box">
+          <div class="preview-header">
+            <h3 id="preview-char-name">Ziggy Si Kelinci</h3>
+            <span class="preview-role" id="preview-char-role">Striker / Penyerang Kilat</span>
+          </div>
+          <p class="preview-desc" id="preview-char-desc">Telinga panjang elastis, kacamata sport, dan kecepatan pantulan tinggi.</p>
+          <div class="stat-bars">
+            <div class="stat-row">
+              <span>Kecepatan:</span>
+              <div class="bar-track"><div class="bar-fill" id="bar-speed" style="width: 96%"></div></div>
+            </div>
+            <div class="stat-row">
+              <span>Kelenturan Pegas (k):</span>
+              <div class="bar-track"><div class="bar-fill" id="bar-spring" style="width: 95%"></div></div>
+            </div>
+            <div class="stat-row">
+              <span>Daya Tahan / Bobot:</span>
+              <div class="bar-track"><div class="bar-fill" id="bar-weight" style="width: 65%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selector Actions -->
+      <div class="selector-action-row">
+        <button id="btn-back-to-lobby" class="btn-secondary">⬅️ KEMBALI</button>
+        <button id="btn-start-match" class="btn-primary-large">MULAI PERTANDINGAN ⚽</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: ONLINE MULTIPLAYER ROOM LOBBY (WAITING ROOM) -->
+  <div id="online-room-screen" class="overlay-screen hidden">
+    <div class="room-lobby-card">
+      
+      <!-- Room Header: Code, Copy Link, Player Count & Status -->
+      <div class="room-lobby-header">
+        <div class="room-header-left">
+          <div class="brand-badge">🌐 ONLINE MULTIPLAYER ROOM</div>
+          <div class="room-code-badge">
+            <span class="room-badge-label">KODE ROOM:</span>
+            <span class="room-code-text" id="room-code-display">BOLA1</span>
+            <button id="btn-room-copy-code" class="btn-copy-code" title="Salin Kode & Link Room">📋 SALIN LINK</button>
+          </div>
+        </div>
+        <div class="room-header-right">
+          <span id="room-player-count" class="room-player-pill">1 / 8 Pemain</span>
+          <span id="room-status-pill" class="room-status-pill">Menunggu Pemain...</span>
+        </div>
+      </div>
+
+      <!-- 2 Teams Roster Split (Merah vs Biru) -->
+      <div class="room-teams-container">
+        
+        <!-- TIM MERAH (The Strikers) -->
+        <div class="room-team-box red">
+          <div class="room-team-header">
+            <div class="team-title-wrap">
+              <span class="team-emoji">🔴</span>
+              <span class="team-name">TIM MERAH</span>
+              <small class="team-sub">The Strikers</small>
+            </div>
+            <button id="btn-room-join-red" class="btn-switch-team red active">PILIH MERAH</button>
+          </div>
+          <div class="room-slots-list" id="room-red-slots">
+            <!-- 4 Slot Merah -->
+          </div>
+        </div>
+
+        <div class="room-vs-divider">
+          <span>VS</span>
+        </div>
+
+        <!-- TIM BIRU (The Rovers) -->
+        <div class="room-team-box blue">
+          <div class="room-team-header">
+            <div class="team-title-wrap">
+              <span class="team-emoji">🔵</span>
+              <span class="team-name">TIM BIRU</span>
+              <small class="team-sub">The Rovers</small>
+            </div>
+            <button id="btn-room-join-blue" class="btn-switch-team blue">PILIH BIRU</button>
+          </div>
+          <div class="room-slots-list" id="room-blue-slots">
+            <!-- 4 Slot Biru -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Character Picker Strip in Room Lobby -->
+      <div class="room-char-picker">
+        <div class="room-picker-title">
+          <span>PILIH KOIN KAMU:</span>
+          <span id="room-selected-char-name" class="highlight-text">Ziggy (Striker)</span>
+        </div>
+        <div class="room-char-row" id="room-char-selection-row">
+          <!-- 8 mini koin avatar yang bisa diklik untuk ganti koin di dalam room -->
+        </div>
+      </div>
+
+      <!-- Action Row in Room Lobby -->
+      <div class="room-actions-row">
+        <button id="btn-room-leave" class="btn-secondary">⬅️ KELUAR ROOM</button>
+        <button id="btn-room-ready" class="btn-secondary btn-room-ready">READY ✓</button>
+        <button id="btn-room-start" class="btn-primary-large">MULAI PERTANDINGAN ⚽</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- OVERLAY 1: MATCH STATS MODAL (TAB KEY / BUTTON) -->
+  <div id="stats-modal" class="overlay-screen hidden">
+    <div class="stats-modal-card">
+      <div class="stats-header">
+        <h2 class="stats-title">📊 STATISTIK PERTANDINGAN</h2>
+        <button id="btn-close-stats" class="icon-close-btn" aria-label="Tutup Statistik">✕</button>
+      </div>
+
+      <!-- Scoreboard Summary -->
+      <div class="stats-teams-row">
+        <div class="stat-team-box red">
+          <span class="stat-team-title">TIM MERAH</span>
+          <span class="stat-team-score" id="stat-score-red">0</span>
+        </div>
+        <div class="stat-vs">VS</div>
+        <div class="stat-team-box blue">
+          <span class="stat-team-title">TIM BIRU</span>
+          <span class="stat-team-score" id="stat-score-blue">0</span>
+        </div>
+      </div>
+
+      <!-- Match Metrics -->
+      <div class="metrics-grid">
+        <div class="metric-item">
+          <span class="metric-label">Total Tembakan</span>
+          <span class="metric-val" id="metric-shots">0 - 0</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">Benturan / Tekel</span>
+          <span class="metric-val" id="metric-tackles">0 - 0</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">Power Petir</span>
+          <span class="metric-val" id="metric-pickups">0</span>
+        </div>
+      </div>
+
+      <!-- Player Performance Table -->
+      <div class="roster-table-container">
+        <table class="roster-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Karakter</th>
+              <th>Tim</th>
+              <th>Peran</th>
+              <th>Gol</th>
+              <th>Tekel</th>
+            </tr>
+          </thead>
+          <tbody id="stats-roster-tbody">
+            <!-- Diisi dinamis oleh game.js -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="stats-footer">
+        <button id="btn-dismiss-stats" class="btn-secondary">TUTUP (TAB)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAY 2: SETTINGS & PAUSE MODAL (ESC KEY / BUTTON) -->
+  <div id="settings-modal" class="overlay-screen hidden">
+    <div class="settings-modal-card">
+      <div class="settings-header">
+        <h2 class="settings-title">⚙️ PENGATURAN GAME</h2>
+        <button id="btn-close-settings" class="icon-close-btn" aria-label="Tutup Pengaturan">✕</button>
+      </div>
+
+      <div class="settings-body">
+        <!-- Mode Bidikan Slingshot -->
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="setting-name">Mode Kontrol Bidik:</span>
+            <small class="setting-desc">Arah gerak ditarik langsung dari koin pemain</small>
+          </div>
+          <div class="aim-toggle-group">
+            <button id="btn-aim-direct" class="toggle-pill active" title="Tarik arah gerak langsung dari pemain">Tarik dari Pemain (Direct)</button>
+            <button id="btn-aim-slingshot" class="toggle-pill" title="Tarik ke belakang layaknya ketapel">Ketapel (Inverted)</button>
+          </div>
+        </div>
+
+        <!-- Volume Suara -->
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="setting-name">Volume Efek Suara:</span>
+            <small class="setting-desc">Atur keras audio efek arcade</small>
+          </div>
+          <input type="range" id="slider-volume" min="0" max="100" value="80" class="range-slider" />
+        </div>
+
+        <!-- Getaran Haptic -->
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="setting-name">Getaran Sentuh (Haptic):</span>
+            <small class="setting-desc">Getar mikro di smartphone saat bidikan maksimal</small>
+          </div>
+          <input type="checkbox" id="check-haptic" checked class="checkbox-toggle" />
+        </div>
+      </div>
+
+      <div class="settings-footer">
+        <button id="btn-resume-game" class="btn-primary">LANJUTKAN MAIN ▶</button>
+        <button id="btn-restart-game" class="btn-secondary">RESET MATCH 🔄</button>
+        <button id="btn-exit-lobby" class="btn-danger">MENU UTAMA 🏠</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAY 3: GOAL CELEBRATION BANNER -->
+  <div id="goal-banner" class="overlay-screen hidden">
+    <div class="goal-banner-content">
+      <h1 class="goal-banner-title">⚽ GOOOAAAL!</h1>
+      <p class="goal-banner-subtitle" id="goal-team">TIM MERAH MENCETAK GOL!</p>
+    </div>
+  </div>
+
+  <!-- OVERLAY 4: SUDDEN DEATH BANNER -->
+  <div id="sudden-death-banner" class="overlay-screen hidden">
+    <div class="sudden-death-card">
+      <div class="sd-icon">⚡</div>
+      <h2 class="sd-title">SUDDEN DEATH!</h2>
+      <p class="sd-desc">Skor imbang setelah 90 turn! <strong>1 Gol berikutnya menentukan juara!</strong></p>
+      <button id="btn-start-sudden-death" class="btn-primary">LANJUTKAN ⚽</button>
+    </div>
+  </div>
+
+  <!-- OVERLAY 5: MATCH END MODAL -->
+  <div id="match-end-modal" class="overlay-screen hidden">
+    <div class="modal-box">
+      <h2 class="modal-title" id="winner-title">🏆 TIM MERAH JUARA!</h2>
+      <p class="modal-mvp" id="mvp-name">MVP: Ziggy (#5) - 3 Gol</p>
+      <div class="modal-action-row">
+        <button id="btn-rematch" class="btn-primary">MAIN LAGI 🔄</button>
+        <button id="btn-end-to-menu" class="btn-secondary">MENU UTAMA 🏠</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAY 6: SMART ORIENTATION SHIELD (MOBILE PORTRAIT OVERLAY) -->
+  <div id="orientation-shield" class="overlay-screen hidden">
+    <div class="shield-card">
+      <div class="phone-rotate-icon">📱</div>
+      <h3 class="shield-title">Putar Ponsel Anda</h3>
+      <p class="shield-desc">Game ini dirancang untuk pengalaman optimal dalam mode <strong>Horizontal (Landscape)</strong>.</p>
+      <button id="btn-force-rotate" class="btn-force-rotate">Paksa Putar Tampilan (Landscape)</button>
+    </div>
+  </div>
+
+  <!-- SCRIPT UTAMA GAME -->
+  <script type="module" src="js/game.js"></script>
+</body>
+</html>
