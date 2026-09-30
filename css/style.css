@@ -20,6 +20,7 @@
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html, body {
@@ -29,6 +30,11 @@ html, body {
   background: var(--bg-gradient);
   font-family: 'Outfit', sans-serif;
   color: #f8fafc;
+  touch-action: none;
+}
+
+button, .icon-btn, .btn-primary, .btn-secondary, .btn-danger, .btn-ready-lock, .mode-card, .char-card-item, .team-pill-btn, .toggle-pill {
+  touch-action: manipulation;
 }
 
 /* === GAME MASTER WRAPPER (Auto-Landscape & Zero-Scroll) === */
@@ -42,6 +48,7 @@ html, body {
   justify-content: space-between;
   padding: env(safe-area-inset-top, 8px) max(16px, env(safe-area-inset-right)) env(safe-area-inset-bottom, 8px) max(16px, env(safe-area-inset-left));
   overflow: hidden;
+  touch-action: none;
 }
 
 /* Fallback CSS jika dipaksa putar di mode portrait */
