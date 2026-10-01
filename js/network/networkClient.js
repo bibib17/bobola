@@ -14,18 +14,31 @@ export class NetworkClient {
     this.reconnectTimer = null;
   }
 
+  getWebSocketUrl() {
+    const customUrl = localStorage.getItem('bolabola_ws_server');
+    if (customUrl) return customUrl;
+
+    const isSecure = window.location.protocol === 'https:';
+    const protocol = isSecure ? 'wss:' : 'ws:';
+    const hostname = window.location.hostname || 'localhost';
+
+    // Jika diakses dari GitHub Pages
+    if (hostname.includes('github.io')) {
+      return `wss://bobola.onrender.com`;
+    }
+
+    // Jika diakses secara lokal (Localhost / Apache XAMPP / IP LAN WiFi)
+    const port = (window.location.port && window.location.port !== '80' && window.location.port !== '443') ? window.location.port : '3000';
+    return `${protocol}//${hostname}:${port}`;
+  }
+
   connect() {
     if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
       return;
     }
 
     try {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const hostname = window.location.hostname || 'localhost';
-      // Jika diakses lewat Apache XAMPP (port 80 / tanpa port) atau port dev lain, arahkan WebSocket ke backend port 3000
-      const port = (window.location.port && window.location.port !== '80' && window.location.port !== '443') ? window.location.port : '3000';
-      const url = `${protocol}//${hostname}:${port}`;
-
+      const url = this.getWebSocketUrl();
       console.log(`[NetworkClient] Menghubungkan WebSocket ke: ${url}`);
       this.ws = new WebSocket(url);
 
