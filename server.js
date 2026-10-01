@@ -319,6 +319,43 @@ function handleClientMessage(client, msg) {
       break;
     }
 
+    case 'TEAM_ACTIONS_UPDATE': {
+      // Mode 1v1 Team: Pemain mengirim seluruh aksi 4 koin di timnya
+      if (!client.room) return;
+      if (Array.isArray(msg.actions)) {
+        msg.actions.forEach(act => {
+          client.room.actions.set(`${client.team}_${act.charKey}`, {
+            playerId: client.id,
+            charKey: act.charKey,
+            angle: act.angle,
+            power: act.power,
+            team: client.team
+          });
+        });
+      }
+
+      const playerInfo = client.room.playerAssignments.get(client.id);
+      if (playerInfo) {
+        playerInfo.isReady = msg.ready !== undefined ? msg.ready : true;
+      }
+
+      client.room.broadcast({
+        type: 'PLAYER_READY_STATUS',
+        playerId: client.id,
+        team: client.team,
+        isReady: playerInfo ? playerInfo.isReady : true,
+        hostId: client.room.hostId,
+        players: client.room.getPlayersData()
+      });
+
+      // Cek apakah kedua tim sudah ready
+      const allReady = Array.from(client.room.playerAssignments.values()).every(p => p.isReady);
+      if (allReady && client.room.playerAssignments.size >= 2) {
+        triggerSimultaneousResolution(client.room);
+      }
+      break;
+    }
+
     case 'PLAYER_READY': {
       if (!client.room) return;
       const playerInfo = client.room.playerAssignments.get(client.id);
@@ -343,6 +380,18 @@ function handleClientMessage(client, msg) {
       break;
     }
 
+    case 'EMOTE': {
+      if (!client.room) return;
+      client.room.broadcast({
+        type: 'EMOTE',
+        playerId: client.id,
+        emoji: msg.emoji,
+        x: msg.x,
+        y: msg.y
+      }, client);
+      break;
+    }
+
     case 'MATCH_START_REQUEST': {
       if (!client.room) return;
       client.room.state = 'PLANNING';
@@ -354,6 +403,7 @@ function handleClientMessage(client, msg) {
       client.room.broadcast({
         type: 'MATCH_STARTED',
         turn: 1,
+        matchType: client.room.matchType || '1V1',
         players: client.room.getPlayersData()
       });
       break;

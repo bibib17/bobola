@@ -120,6 +120,14 @@ export class NetworkClient {
     });
   }
 
+  sendTeamActions(actions, ready = true) {
+    return this.send({
+      type: 'TEAM_ACTIONS_UPDATE',
+      actions,
+      ready
+    });
+  }
+
   sendReady(ready = true) {
     return this.send({
       type: 'PLAYER_READY',

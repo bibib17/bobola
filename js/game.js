@@ -272,7 +272,7 @@ export class Game {
         const onlineInputs = document.getElementById('online-room-inputs');
         const soloActionRow = document.getElementById('lobby-action-row-solo');
         if (onlineInputs) {
-          if (this.gameMode === 'ONLINE') {
+          if (this.gameMode === 'ONLINE' || this.gameMode === 'ONLINE_1V1') {
             onlineInputs.classList.remove('hidden');
             if (soloActionRow) soloActionRow.classList.add('hidden');
             this.network.connect();
@@ -771,7 +771,36 @@ export class Game {
 
     const btnReady = document.getElementById('btn-ready');
 
-    if (this.gameMode === 'ONLINE') {
+    if (this.gameMode === 'ONLINE_1V1') {
+      // Pada Mode Online 1v1 Team: Pemain mengunci status ready untuk SEMUA 4 koin timnya
+      const myTeamCoins = this.entities.filter(c => c.team === this.userTeam);
+      const isAnyNotReady = myTeamCoins.some(c => !c.isReady);
+      const newReadyState = isAnyNotReady;
+
+      myTeamCoins.forEach(c => {
+        c.isReady = newReadyState;
+      });
+
+      if (btnReady) {
+        if (newReadyState) {
+          btnReady.classList.add('ready-active');
+          btnReady.innerHTML = '<span>LOCKED ✓</span>';
+        } else {
+          btnReady.classList.remove('ready-active');
+          btnReady.innerHTML = '<span>READY ✓</span>';
+        }
+      }
+
+      this.updateRosterReadyDots();
+
+      const actions = myTeamCoins.map(c => ({
+        charKey: c.charKey,
+        angle: c.aimAngle,
+        power: c.aimPower
+      }));
+
+      this.network.sendTeamActions(actions, newReadyState);
+    } else if (this.gameMode === 'ONLINE') {
       this.activeUserChar.isReady = !this.activeUserChar.isReady;
       if (btnReady) {
         if (this.activeUserChar.isReady) {
@@ -846,7 +875,8 @@ export class Game {
           this.physics.buffManager.deployObstacle(char, (x, y, text, color) => this.physics.addCallout(x, y, text, color));
         }
 
-        const speed = char.aimPower * 4.6 * dynamicBoost * charSpeedMult;
+        // Pengurangan maxspeed 20% (multiplier 3.68 dari sebelumnya 4.6)
+        const speed = char.aimPower * 3.68 * dynamicBoost * charSpeedMult;
         char.vx = Math.cos(char.aimAngle) * speed;
         char.vy = Math.sin(char.aimAngle) * speed;
 
@@ -871,6 +901,8 @@ export class Game {
   }
 
   aiPlanTurn() {
+    if (this.gameMode === 'ONLINE' || this.gameMode === 'ONLINE_1V1') return;
+
     this.entities.forEach(char => {
       // Pada mode SOLO: Pemain mengarahkan SEMUA panah koin timnya sendiri!
       // AI bot HANYA mengontrol dan mengarahkan koin tim lawan!

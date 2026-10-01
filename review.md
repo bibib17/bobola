@@ -62,6 +62,19 @@ Seluruh roadmap fase mobile dari [prd_mobile.md](file:///c:/xampp/htdocs/bolabol
 
 ---
 
+### 6. ⚡ Penyesuaian Max Speed (-20%) & Mode Online 1v1 Team Duel
+- **Pengurangan Max Speed 20% (`js/game.js`)**:
+  - Multiplier peluncuran tembakan disesuaikan dari `4.6` menjadi `3.68` agar dinamika pergerakan koin dan bola terasa lebih taktis, terkontrol, dan grounded.
+- **Mode Online 1v1 Team Duel (2 Pemain)**:
+  - Menggantikan mode Pass & Play lokal menjadi duel online 1v1 penuh:
+  - **Pemain 1** mengendalikan seluruh Tim Merah (4 koin).
+  - **Pemain 2** mengendalikan seluruh Tim Biru (4 koin).
+  - Kedua pemain mengarahkan ke-4 koin timnya secara bebas sebelum menekan tombol READY, dan server mengeksekusi ke-8 koin secara serentak (*simultaneous turn*).
+- **Mode Online Party Room (4-8 Pemain)**:
+  - Tetap tersedia untuk bermain bersama teman secara beramai-ramai di mana 1 orang mengendalikan 1 koin karakter.
+
+---
+
 ## 📊 Hasil Pengujian & Verifikasi Otomatis (CDP Test Suite)
 
 - ✅ **PWA Manifest Link & Apple Icon**: Terdeteksi dan sesuai standar W3C & Apple.
@@ -69,6 +82,7 @@ Seluruh roadmap fase mobile dari [prd_mobile.md](file:///c:/xampp/htdocs/bolabol
 - ✅ **Goalkeeper / Goal Area Touch Selection (`test_goal_keeper_click.js`)**: Sentuhan di area gawang dan klik tombol dot roster `[8]` berhasil 100% memilih Rocco #8 dan mengaktifkan bidikan.
 - ✅ **Mobile Landscape Canvas**: Merender tajam pada rasio 960x540 di resolusi layar 844x390 (iPhone 14/15 Landscape).
 - ✅ **Mobile UX & Floating Emotes**: Berfungsi mulus tanpa drop frame (60 FPS stabil).
+- ✅ **Speed Tuning & 1v1 Multiplayer Protocol**: Multiplier 3.68 dan sinkronisasi `TEAM_ACTIONS_UPDATE` tervalidasi.
 - ✅ **JavaScript Syntax Check (`node --check`)**: 100% lulus tanpa kesalahan.
 
 ---
