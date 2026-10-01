@@ -37,7 +37,7 @@ button, .icon-btn, .btn-primary, .btn-secondary, .btn-danger, .btn-ready-lock, .
   touch-action: manipulation;
 }
 
-/* === GAME MASTER WRAPPER (Auto-Landscape & Zero-Scroll) === */
+/* === GAME MASTER WRAPPER (Auto-Landscape & Zero-Scroll Fullscreen) === */
 #game-wrapper {
   position: relative;
   width: 100vw;
@@ -47,9 +47,10 @@ button, .icon-btn, .btn-primary, .btn-secondary, .btn-danger, .btn-ready-lock, .
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: env(safe-area-inset-top, 8px) max(16px, env(safe-area-inset-right)) env(safe-area-inset-bottom, 8px) max(16px, env(safe-area-inset-left));
+  padding: env(safe-area-inset-top, 4px) max(8px, env(safe-area-inset-right)) env(safe-area-inset-bottom, 4px) max(8px, env(safe-area-inset-left));
   overflow: hidden;
   touch-action: none;
+  gap: 2px;
   transition: all 0.25s ease-in-out;
 }
 
@@ -95,12 +96,12 @@ body.pseudo-fullscreen-active {
 
 #game-wrapper.pseudo-fullscreen .top-bar {
   max-width: 100% !important;
-  height: 46px !important;
+  height: 40px !important;
 }
 
 #game-wrapper.pseudo-fullscreen .bottom-bar {
   max-width: 100% !important;
-  height: 52px !important;
+  height: 44px !important;
 }
 
 #game-wrapper.pseudo-fullscreen .arena-container {
@@ -109,14 +110,14 @@ body.pseudo-fullscreen-active {
 }
 
 #game-wrapper.pseudo-fullscreen #game-canvas {
-  max-height: calc(100dvh - 106px) !important;
+  max-height: 100% !important;
 }
 
 /* === TOP BAR (SCOREBOARD & STATUS) === */
 .top-bar {
   width: 100%;
-  max-width: 980px;
-  height: 52px;
+  max-width: 1200px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -124,10 +125,11 @@ body.pseudo-fullscreen-active {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--ui-border);
-  border-radius: 16px;
-  padding: 0 14px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  border-radius: 14px;
+  padding: 0 12px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
   z-index: 20;
+  flex-shrink: 0;
 }
 
 .team-badge {
@@ -188,23 +190,30 @@ body.pseudo-fullscreen-active {
   line-height: 1;
 }
 
+.top-left-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .match-center {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 2px;
+  justify-content: center;
+  gap: 12px;
 }
 
 .turn-pill {
-  background: rgba(245, 158, 11, 0.2);
+  background: rgba(245, 158, 11, 0.18);
   border: 1px solid rgba(245, 158, 11, 0.5);
   color: #fbbf24;
-  padding: 3px 14px;
+  padding: 3px 12px;
   border-radius: 20px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.5px;
   text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+  white-space: nowrap;
 }
 
 .sudden-death-pill {
@@ -221,15 +230,17 @@ body.pseudo-fullscreen-active {
 
 .game-title {
   font-family: 'Fredoka', cursive;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #cbd5e1;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
 .top-actions {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 .icon-btn {
@@ -263,27 +274,31 @@ body.pseudo-fullscreen-active {
   transform: scale(0.92);
 }
 
-/* === ARENA CONTAINER (ASPECT RATIO 16:9) === */
+/* === ARENA CONTAINER (FULLSCREEN MAXIMIZED) === */
 .arena-container {
   position: relative;
   width: 100%;
-  max-width: 980px;
+  max-width: 100%;
   flex: 1;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 0;
+  padding: 0;
+  margin: 0;
   z-index: 10;
+  overflow: hidden;
 }
 
 #game-canvas {
   width: 100%;
-  height: auto;
-  max-height: calc(100vh - 128px);
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   aspect-ratio: 16 / 9;
   object-fit: contain;
-  border-radius: 22px;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 30px rgba(56, 189, 248, 0.2);
+  border-radius: 18px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 32px rgba(56, 189, 248, 0.22);
   cursor: grab;
   touch-action: none;
 }
@@ -295,20 +310,21 @@ body.pseudo-fullscreen-active {
 /* === BOTTOM CONTROL & ROSTER BAR === */
 .bottom-bar {
   width: 100%;
-  max-width: 980px;
-  height: 60px;
+  max-width: 1200px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   background: var(--ui-glass);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--ui-border);
-  border-radius: 18px;
-  padding: 0 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  border-radius: 14px;
+  padding: 0 12px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
   z-index: 20;
+  flex-shrink: 0;
 }
 
 /* Roster Dots (Status Ready 8 Pemain) */
@@ -1839,80 +1855,81 @@ body.pseudo-fullscreen-active {
 
 @media (max-height: 540px) {
   #game-wrapper {
-    padding: env(safe-area-inset-top, 2px) max(10px, env(safe-area-inset-right)) env(safe-area-inset-bottom, 2px) max(10px, env(safe-area-inset-left));
+    padding: env(safe-area-inset-top, 2px) max(8px, env(safe-area-inset-right)) env(safe-area-inset-bottom, 2px) max(8px, env(safe-area-inset-left));
+    gap: 1px;
   }
 
   .top-bar {
-    height: 40px;
-    padding: 0 10px;
-    border-radius: 12px;
-  }
-
-  .team-icon {
-    width: 28px;
-    height: 28px;
-    font-size: 14px;
-  }
-
-  .team-name {
-    font-size: 10px;
-  }
-
-  .team-score {
-    font-size: 20px;
-  }
-
-  .turn-pill {
-    font-size: 11px;
-    padding: 2px 10px;
-  }
-
-  .game-title {
-    font-size: 11px;
-  }
-
-  .icon-btn {
-    width: 28px;
-    height: 28px;
-    font-size: 13px;
-    border-radius: 8px;
-  }
-
-  .bottom-bar {
-    height: 44px;
-    padding: 0 10px;
-    border-radius: 12px;
-  }
-
-  .roster-dot {
-    width: 24px;
-    height: 24px;
-    font-size: 11px;
-  }
-
-  .active-char-badge {
-    font-size: 11px;
-    padding: 2px 8px;
-  }
-
-  .timer-text {
-    font-size: 10px;
-  }
-
-  .btn-ready-lock {
-    height: 34px;
-    padding: 0 16px;
-    font-size: 12px;
+    height: 36px;
+    padding: 0 8px;
     border-radius: 10px;
   }
 
+  .team-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+
+  .team-name {
+    font-size: 9px;
+  }
+
+  .team-score {
+    font-size: 18px;
+  }
+
+  .turn-pill {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+
+  .game-title {
+    font-size: 10px;
+  }
+
+  .icon-btn {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+    border-radius: 7px;
+  }
+
+  .bottom-bar {
+    height: 40px;
+    padding: 0 8px;
+    border-radius: 10px;
+  }
+
+  .roster-dot {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
+  }
+
+  .active-char-badge {
+    font-size: 10px;
+    padding: 1px 6px;
+  }
+
+  .timer-text {
+    font-size: 9px;
+  }
+
+  .btn-ready-lock {
+    height: 30px;
+    padding: 0 14px;
+    font-size: 11px;
+    border-radius: 8px;
+  }
+
   .arena-container {
-    padding: 1px 0;
+    padding: 0;
   }
 
   #game-canvas {
-    max-height: calc(100dvh - 90px);
-    border-radius: 16px;
+    max-height: 100% !important;
+    border-radius: 14px;
   }
 
   /* Compact Overlay Screens */

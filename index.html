@@ -28,33 +28,37 @@
 
     <!-- TOP BAR: SCOREBOARD, STATUS & ACTIONS -->
     <header class="top-bar">
-      <!-- Tim Merah (The Strikers) -->
-      <div class="team-badge red">
-        <div class="team-icon">🔴</div>
-        <div class="team-info">
-          <span class="team-name" id="label-team-red">The Strikers</span>
-          <span class="team-score" id="score-red">0</span>
-        </div>
-      </div>
-
-      <!-- Turn Counter, Title & Status -->
-      <div class="match-center">
-        <div class="turn-pill" id="turn-counter">1 / 90 TURNS</div>
-        <div class="game-title" id="hud-match-title">⚡ BOLABOLA LEAGUE</div>
+      <!-- Left: Player Profile & Quick Tag -->
+      <div class="top-left-section">
         <div class="user-rank-badge" id="user-rank-badge">🌱 Rookie Player</div>
-        <div class="sudden-death-pill hidden" id="sudden-death-pill">⚡ SUDDEN DEATH ⚡</div>
       </div>
 
-      <!-- Tim Biru (The Rovers) -->
-      <div class="team-badge blue">
-        <div class="team-icon">🔵</div>
-        <div class="team-info">
-          <span class="team-name" id="label-team-blue">The Rovers</span>
-          <span class="team-score" id="score-blue">0</span>
+      <!-- Center: Unified Esports Scoreboard (Red - Turn - Blue) -->
+      <div class="match-center">
+        <!-- Tim Merah (The Strikers) -->
+        <div class="team-badge red">
+          <div class="team-icon">🔴</div>
+          <div class="team-info">
+            <span class="team-name" id="label-team-red">The Strikers</span>
+            <span class="team-score" id="score-red">0</span>
+          </div>
+        </div>
+
+        <!-- Turn Pill & Status -->
+        <div class="turn-pill" id="turn-counter">⚡ 1 / 90 TURNS</div>
+        <div class="sudden-death-pill hidden" id="sudden-death-pill">⚡ SUDDEN DEATH ⚡</div>
+
+        <!-- Tim Biru (The Rovers) -->
+        <div class="team-badge blue">
+          <div class="team-info">
+            <span class="team-name" id="label-team-blue">The Rovers</span>
+            <span class="team-score" id="score-blue">0</span>
+          </div>
+          <div class="team-icon">🔵</div>
         </div>
       </div>
 
-      <!-- Action Buttons -->
+      <!-- Right: Action Buttons -->
       <div class="top-actions">
         <button id="btn-home" class="icon-btn" title="Kembali ke Menu Utama (Home)" aria-label="Menu Utama">🏠</button>
         <button id="btn-emote" class="icon-btn" title="Reaksi Emotikon Cepat (E)" aria-label="Emote Reaksi">💬</button>

@@ -17,16 +17,16 @@ export class PhysicsEngine {
       soundFX: this.soundFX
     });
 
-    // Dimensi Arena Dalam (Bumper Meja)
-    this.padding = 38;
+    // Dimensi Arena Dalam (Bumper Meja Dioptimalkan Penuh Layar)
+    this.padding = 24;
     this.rinkLeft = this.padding;
     this.rinkRight = this.width - this.padding;
-    this.rinkTop = this.padding;
-    this.rinkBottom = this.height - this.padding;
-    this.cornerRadius = 65;
+    this.rinkTop = 14;
+    this.rinkBottom = this.height - 14;
+    this.cornerRadius = 48;
 
     // Dimensi Gawang
-    this.goalWidth = 34;
+    this.goalWidth = 24;
     this.goalHeight = 160;
     this.goalTop = (this.height - this.goalHeight) / 2;
     this.goalBottom = this.goalTop + this.goalHeight;
@@ -547,23 +547,14 @@ export class PhysicsEngine {
   }
 
   renderLEDBoard(ctx) {
-    const text = '⚡ BOLABOLA LEAGUE • THE STRIKERS VS THE ROVERS • SIMULTANEOUS PHYSICS SOCCER • AIM & SHOOT ⚡   ';
+    // Clean subtle glow accent along top perimeter
     ctx.save();
-    ctx.font = '900 10px Outfit, Fredoka, sans-serif';
-    ctx.fillStyle = 'rgba(56, 189, 248, 0.7)';
-
-    // Banner LED Atas
-    ctx.save();
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.rect(this.rinkLeft, 14, this.rinkRight - this.rinkLeft, 16);
-    ctx.clip();
-    const textW = ctx.measureText(text).width;
-    const xOffset = -(this.ledMarqueeOffset % textW);
-    for (let x = xOffset; x < this.width; x += textW) {
-      ctx.fillText(text, x, 26);
-    }
-    ctx.restore();
-
+    ctx.moveTo(this.rinkLeft + this.cornerRadius, 4);
+    ctx.lineTo(this.rinkRight - this.cornerRadius, 4);
+    ctx.stroke();
     ctx.restore();
   }
 
