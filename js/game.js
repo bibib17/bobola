@@ -1196,6 +1196,7 @@ export class Game {
     if (onlineRoomScreen) onlineRoomScreen.classList.add('hidden');
     this.onlineRoomPlayers = [];
     this.isUserReadyInRoom = false;
+    if (this.network) this.network.leaveRoom();
 
     // Tampilkan Layar Utama (Lobby)
     if (lobbyScreen) lobbyScreen.classList.remove('hidden');

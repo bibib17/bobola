@@ -44,6 +44,49 @@ CREATE TABLE IF NOT EXISTS `match_participants` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- =========================================================
+-- MULTIPLAYER ROOM & REAL-TIME SYNC TABLES (INFINITYFREE PHP)
+-- =========================================================
+
+CREATE TABLE IF NOT EXISTS `rooms` (
+  `id` VARCHAR(10) PRIMARY KEY,
+  `host_id` VARCHAR(50) NOT NULL,
+  `match_type` VARCHAR(10) NOT NULL DEFAULT '1V1',
+  `status` VARCHAR(20) NOT NULL DEFAULT 'LOBBY',
+  `current_turn` INT NOT NULL DEFAULT 1,
+  `score_red` INT NOT NULL DEFAULT 0,
+  `score_blue` INT NOT NULL DEFAULT 0,
+  `resolution_actions` TEXT DEFAULT NULL,
+  `resolution_version` INT NOT NULL DEFAULT 0,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `room_players` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `room_id` VARCHAR(10) NOT NULL,
+  `player_id` VARCHAR(50) NOT NULL,
+  `player_name` VARCHAR(50) NOT NULL,
+  `team` VARCHAR(10) NOT NULL DEFAULT 'RED',
+  `char_key` VARCHAR(30) NOT NULL DEFAULT 'ZIGGY',
+  `is_ready` TINYINT(1) NOT NULL DEFAULT 0,
+  `aim_angle` FLOAT DEFAULT 0,
+  `aim_power` FLOAT DEFAULT 0,
+  `team_actions` TEXT DEFAULT NULL,
+  `last_active` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY `uniq_player_room` (`room_id`, `player_id`),
+  INDEX `idx_room` (`room_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `room_events` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `room_id` VARCHAR(10) NOT NULL,
+  `event_type` VARCHAR(30) NOT NULL,
+  `event_payload` TEXT DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_room_event` (`room_id`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Seed Player Awal (Demo Leaderboard)
 INSERT INTO `players` (`player_name`, `rank_title`, `level`, `exp`, `matches_played`, `matches_won`, `total_goals`, `total_buffs`, `favorite_char`)
 VALUES
