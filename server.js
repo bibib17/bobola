@@ -451,6 +451,18 @@ function handleClientMessage(client, msg) {
 }
 
 function joinRoom(client, room, playerName = 'Player', team = 'RED', charKey = 'ZIGGY') {
+  const mType = (room.matchType || '2V2').toUpperCase();
+  let maxCap = 8;
+  if (mType === '1V1') maxCap = 2;
+  else if (mType === '2V2') maxCap = 4;
+  else if (mType === '3V3') maxCap = 6;
+  else maxCap = 8;
+
+  if (room.clients.size >= maxCap && !room.clients.has(client)) {
+    client.send(JSON.stringify({ type: 'ERROR', message: `Room ${room.id} sudah penuh! (Maksimal ${maxCap} pemain untuk format ${mType}).` }));
+    return;
+  }
+
   if (client.room) {
     client.room.clients.delete(client);
     client.room.playerAssignments.delete(client.id);

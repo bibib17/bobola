@@ -94,8 +94,20 @@ try {
             $stmt->execute([':rid' => $roomId]);
             $room = $stmt->fetch();
 
-            if (!$room) {
-                echo json_encode(['success' => false, 'type' => 'ERROR', 'message' => "Room [{$roomId}] tidak ditemukan! Silakan buat room baru."]);
+            // Cek kapasitas maksimal berdasarkan format pertandingan (1v1=2, 2v2=4, 3v3=6, 4v4/PARTY=8)
+            $mType = strtoupper($room['match_type'] ?? '2V2');
+            $maxCap = 8;
+            if ($mType === '1V1') $maxCap = 2;
+            else if ($mType === '2V2') $maxCap = 4;
+            else if ($mType === '3V3') $maxCap = 6;
+            else $maxCap = 8;
+
+            $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM `room_players` WHERE `room_id` = :rid");
+            $stmtCount->execute([':rid' => $roomId]);
+            $currentCount = (int)$stmtCount->fetchColumn();
+
+            if ($currentCount >= $maxCap) {
+                echo json_encode(['success' => false, 'type' => 'ERROR', 'message' => "Room [{$roomId}] sudah penuh! (Maksimal {$maxCap} pemain untuk format {$mType})."]);
                 exit;
             }
 

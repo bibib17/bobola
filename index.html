@@ -143,20 +143,31 @@
           <div class="mode-tag">1 VS 1 TIM</div>
         </div>
 
-        <!-- Mode 3: Online Party Room (4-8 Pemain) -->
+        <!-- Mode 3: Online Party Room (4, 6, 8 Pemain) -->
         <div class="mode-card" data-mode="ONLINE" id="mode-online">
           <div class="mode-icon">🌐</div>
           <div class="mode-info">
-            <h3 class="mode-name">Online Party Room (4-8 Pemain)</h3>
-            <p class="mode-desc">Main rame-rame bareng teman (1 pemain pegang 1 koin karakter).</p>
+            <h3 class="mode-name">Online Multiplayer (4, 6, 8 Pemain)</h3>
+            <p class="mode-desc">Bisa main 4 pemain (2v2), 6 pemain (3v3), atau 8 pemain (4v4).</p>
           </div>
-          <div class="mode-tag">4-8 PEMAIN</div>
+          <div class="mode-tag">4, 6, 8 PEMAIN</div>
         </div>
       </div>
 
       <!-- Online Room Settings Form (Muncul jika mode ONLINE dipilih) -->
       <div id="online-room-inputs" class="online-inputs-box hidden">
         <input type="text" id="input-player-name" placeholder="Nama Pemain Kamu (cth: Budi)" maxlength="12" class="text-input" value="Player 1" />
+        
+        <!-- Pilihan Format Jumlah Pemain (4, 6, 8) -->
+        <div class="room-capacity-section">
+          <span class="capacity-section-title">PILIH JUMLAH PEMAIN:</span>
+          <div class="capacity-pills-row" id="capacity-pills-row">
+            <button type="button" class="capacity-pill active" data-capacity="4" data-type="2V2">👥 4 Pemain<br><small>(2v2)</small></button>
+            <button type="button" class="capacity-pill" data-capacity="6" data-type="3V3">⚡ 6 Pemain<br><small>(3v3)</small></button>
+            <button type="button" class="capacity-pill" data-capacity="8" data-type="4V4">🌐 8 Pemain<br><small>(4v4)</small></button>
+          </div>
+        </div>
+
         <div class="room-code-input-row">
           <input type="text" id="input-room-code" placeholder="KODE ROOM (cth: BOLA1)" maxlength="6" class="text-input uppercase" />
           <button id="btn-random-code" class="btn-icon-addon" title="Buat Kode Acak">🎲</button>

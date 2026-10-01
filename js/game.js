@@ -46,6 +46,8 @@ export class Game {
     this.hostId = null;
     this.onlineRoomPlayers = [];
     this.isUserReadyInRoom = false;
+    this.selectedOnlineFormat = '2V2';
+    this.roomMatchType = '2V2';
     this.network = new NetworkClient({
       onMessage: (data) => this.handleNetworkMessage(data),
       onStatusChange: (connected, msg) => this.handleNetworkStatus(connected, msg)
@@ -476,12 +478,23 @@ export class Game {
       });
     }
 
+    // Online Format Capacity Pills (4, 6, 8 Pemain)
+    document.querySelectorAll('.capacity-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.capacity-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.selectedOnlineFormat = btn.getAttribute('data-type') || '2V2';
+        this.soundFX.playBoing(1.1);
+      });
+    });
+
     if (btnCreateRoom) {
       btnCreateRoom.addEventListener('click', () => {
         this.userPlayerName = inputPlayer && inputPlayer.value.trim() ? inputPlayer.value.trim() : 'Player 1';
         const code = inputRoom && inputRoom.value.trim() ? inputRoom.value.trim().toUpperCase() : ('BOLA' + Math.floor(10 + Math.random() * 89));
         if (inputRoom) inputRoom.value = code;
-        const matchType = this.gameMode === 'ONLINE_1V1' ? '1V1' : 'PARTY';
+        const matchType = this.gameMode === 'ONLINE_1V1' ? '1V1' : (this.selectedOnlineFormat || '2V2');
+        this.roomMatchType = matchType;
         this.network.connect();
         this.network.createRoom(code, this.userPlayerName, this.userTeam, this.userCharKey, matchType);
       });
@@ -491,7 +504,7 @@ export class Game {
       btnJoinRoom.addEventListener('click', () => {
         this.userPlayerName = inputPlayer && inputPlayer.value.trim() ? inputPlayer.value.trim() : 'Player 2';
         const code = inputRoom && inputRoom.value.trim() ? inputRoom.value.trim().toUpperCase() : 'BOLA1';
-        const matchType = this.gameMode === 'ONLINE_1V1' ? '1V1' : 'PARTY';
+        const matchType = this.gameMode === 'ONLINE_1V1' ? '1V1' : (this.selectedOnlineFormat || '2V2');
         this.network.connect();
         this.network.joinRoom(code, this.userPlayerName, this.userTeam, this.userCharKey, matchType);
       });
@@ -1590,13 +1603,37 @@ export class Game {
     const charRow = document.getElementById('room-char-selection-row');
     const selectedCharName = document.getElementById('room-selected-char-name');
 
-    const is1v1 = (this.gameMode === 'ONLINE_1V1') || (this.roomMatchType === '1V1');
+    const matchType = this.roomMatchType || (this.gameMode === 'ONLINE_1V1' ? '1V1' : '2V2');
+    const is1v1 = (matchType === '1V1');
+    const is2v2 = (matchType === '2V2');
+    const is3v3 = (matchType === '3V3');
+    const is4v4 = (matchType === '4V4' || matchType === 'PARTY');
+
+    let maxSlots = 4;
+    let targetCapacity = 8;
+    let formatTitle = '4v4 (8 Pemain)';
+
+    if (is1v1) {
+      maxSlots = 1;
+      targetCapacity = 2;
+      formatTitle = '1v1 (2 Pemain)';
+    } else if (is2v2) {
+      maxSlots = 2;
+      targetCapacity = 4;
+      formatTitle = '2v2 (4 Pemain)';
+    } else if (is3v3) {
+      maxSlots = 3;
+      targetCapacity = 6;
+      formatTitle = '3v3 (6 Pemain)';
+    } else {
+      maxSlots = 4;
+      targetCapacity = 8;
+      formatTitle = '4v4 (8 Pemain)';
+    }
 
     if (codeDisplay) codeDisplay.textContent = this.roomId || 'BOLA1';
     if (playerCount) {
-      playerCount.textContent = is1v1
-        ? `${this.onlineRoomPlayers.length} / 2 Kapten Tim`
-        : `${this.onlineRoomPlayers.length} / 8 Pemain`;
+      playerCount.textContent = `${this.onlineRoomPlayers.length} / ${targetCapacity} Pemain (${formatTitle.split(' ')[0]})`;
     }
 
     const myInfo = this.onlineRoomPlayers.find(p => p.id === this.playerId);
@@ -1618,7 +1655,7 @@ export class Game {
         }
       } else {
         if (this.onlineRoomPlayers.length >= 2) {
-          statusPill.textContent = 'Siap Memulai Pertandingan!';
+          statusPill.textContent = `Laga ${formatTitle.split(' ')[0]} Siap Dimulai!`;
           statusPill.style.color = '#34D399';
           statusPill.style.borderColor = 'rgba(16, 185, 129, 0.4)';
         } else {
@@ -1659,7 +1696,6 @@ export class Game {
     // Render Slots Tim Merah
     if (redSlots) {
       redSlots.innerHTML = '';
-      const maxSlots = is1v1 ? 1 : 4;
       for (let i = 0; i < maxSlots; i++) {
         const p = redPlayers[i];
         const slotEl = document.createElement('div');
@@ -1684,7 +1720,7 @@ export class Game {
           }
         } else {
           slotEl.className = 'room-slot-item empty';
-          slotEl.innerHTML = `<span>${is1v1 ? 'Slot Kapten Merah Kosong' : `Slot ${i + 1}: Bot Standby 🤖`}</span>`;
+          slotEl.innerHTML = `<span>${is1v1 ? 'Slot Kapten Merah Kosong' : `Slot Merah ${i + 1}: Bot Standby 🤖`}</span>`;
         }
         redSlots.appendChild(slotEl);
       }
@@ -1693,7 +1729,6 @@ export class Game {
     // Render Slots Tim Biru
     if (blueSlots) {
       blueSlots.innerHTML = '';
-      const maxSlots = is1v1 ? 1 : 4;
       for (let i = 0; i < maxSlots; i++) {
         const p = bluePlayers[i];
         const slotEl = document.createElement('div');
@@ -1718,7 +1753,7 @@ export class Game {
           }
         } else {
           slotEl.className = 'room-slot-item empty';
-          slotEl.innerHTML = `<span>${is1v1 ? 'Slot Kapten Biru Kosong' : `Slot ${i + 1}: Bot Standby 🤖`}</span>`;
+          slotEl.innerHTML = `<span>${is1v1 ? 'Slot Kapten Biru Kosong' : `Slot Biru ${i + 1}: Bot Standby 🤖`}</span>`;
         }
         blueSlots.appendChild(slotEl);
       }
