@@ -1756,11 +1756,19 @@ body.pseudo-fullscreen-active {
 }
 
 /* === PWA INSTALL BUTTONS & IOS GUIDE MODAL === */
+.pwa-install-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 10px;
+}
+
 .btn-pwa-install {
   background: linear-gradient(135deg, #f59e0b, #e11d48);
   border: 1px solid #facc15;
   color: #ffffff;
-  padding: 12px 20px;
+  padding: 10px 18px;
   border-radius: 12px;
   font-family: 'Outfit', sans-serif;
   font-size: 13px;

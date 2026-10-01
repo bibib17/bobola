@@ -82,10 +82,8 @@ export class PWAManager {
       return;
     }
 
-    // Di iOS atau jika prompt tersedia, tampilkan tombol instal
-    if (this.isIOS || this.deferredPrompt) {
-      this.showInstallButtons(true);
-    }
+    // Tampilkan tombol instal di layar utama dan pengaturan
+    this.showInstallButtons(true);
   }
 
   showInstallButtons(show) {
@@ -111,16 +109,20 @@ export class PWAManager {
       return;
     }
 
-    // 1. Android & Desktop Chrome / Chromium
+    // 1. Android & Desktop Chrome / Chromium native prompt
     if (this.deferredPrompt) {
-      this.deferredPrompt.prompt();
-      const { outcome } = await this.deferredPrompt.userChoice;
-      console.log(`[PWA] Pilihan user: ${outcome}`);
-      if (outcome === 'accepted') {
-        this.deferredPrompt = null;
-        this.showInstallButtons(false);
+      try {
+        this.deferredPrompt.prompt();
+        const { outcome } = await this.deferredPrompt.userChoice;
+        console.log(`[PWA] Pilihan user: ${outcome}`);
+        if (outcome === 'accepted') {
+          this.deferredPrompt = null;
+          this.showInstallButtons(false);
+        }
+        return;
+      } catch (e) {
+        console.warn('[PWA] Native prompt failed:', e);
       }
-      return;
     }
 
     // 2. iOS Safari (iPhone / iPad)
@@ -128,12 +130,17 @@ export class PWAManager {
       if (this.iosModal) {
         this.iosModal.classList.remove('hidden');
       } else {
-        alert("📲 Cara Pasang di iPhone/iPad:\n1. Ketuk ikon Bagikan (Share 📤) di Safari.\n2. Gulir ke bawah lalu pilih 'Tambah ke Layar Utama' (Add to Home Screen ➕).");
+        alert("📲 Panduan Pasang di iPhone/iPad:\n1. Ketuk tombol Bagikan (Share 📤) di bagian bawah Safari.\n2. Gulir ke bawah lalu pilih 'Tambah ke Layar Utama' (Add to Home Screen ➕).");
       }
       return;
     }
 
-    // 3. Browser lain tanpa direct prompt
-    alert("📲 Cara Pasang Game:\nBuka menu browser Anda (titik 3 di pojok) lalu pilih 'Pasang Aplikasi' atau 'Tambahkan ke Layar Utama'.");
+    // 3. Android / Desktop Browser tanpa direct prompt otomatis
+    if (this.iosModal) {
+      // Gunakan modal panduan universal
+      this.iosModal.classList.remove('hidden');
+    } else {
+      alert("📲 Cara Pasang Game BolaBola:\n1. Buka menu browser Anda (ikon titik 3 ⋮ atau ikon ⚙️ di pojok atas).\n2. Pilih 'Pasang Aplikasi' / 'Install App' atau 'Tambahkan ke Layar Utama' (Add to Home Screen).");
+    }
   }
 }
