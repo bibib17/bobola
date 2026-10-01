@@ -1705,6 +1705,296 @@ body.pseudo-fullscreen-active {
   box-shadow: 0 0 14px rgba(16, 185, 129, 0.4);
 }
 
+/* === PWA INSTALL BUTTONS & IOS GUIDE MODAL === */
+.btn-pwa-install {
+  background: linear-gradient(135deg, #f59e0b, #e11d48);
+  border: 1px solid #facc15;
+  color: #ffffff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(245, 158, 11, 0.4), 0 0 20px rgba(225, 29, 72, 0.3);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  animation: pulseGold 2.5s infinite alternate;
+}
+
+.btn-pwa-install:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 24px rgba(245, 158, 11, 0.6);
+}
+
+.btn-install-shortcut {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid #38bdf8;
+  color: #38bdf8;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-install-shortcut:hover {
+  background: rgba(56, 189, 248, 0.3);
+}
+
+/* === IOS INSTALL GUIDE CARD === */
+.ios-guide-card {
+  background: var(--ui-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--ui-border);
+  border-radius: 20px;
+  padding: 22px 24px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: bannerPop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ios-guide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ios-guide-icon {
+  font-size: 26px;
+}
+
+.ios-guide-title {
+  font-family: 'Fredoka', cursive;
+  font-size: 18px;
+  color: #f8fafc;
+  flex: 1;
+}
+
+.ios-guide-desc {
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.ios-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 6px 0;
+}
+
+.ios-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.step-num {
+  width: 24px;
+  height: 24px;
+  background: #38bdf8;
+  color: #090d16;
+  font-weight: 800;
+  font-size: 13px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.step-text {
+  font-size: 12px;
+  color: #e2e8f0;
+  line-height: 1.4;
+}
+
+.ios-icon-badge {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin: 0 2px;
+}
+
+/* =========================================================================
+   === RESPONSIVE ULTRA-COMPACT MEDIA QUERIES (FOR SMARTPHONE LANDSCAPE) ===
+   ========================================================================= */
+
+@media (max-height: 540px) {
+  #game-wrapper {
+    padding: env(safe-area-inset-top, 2px) max(10px, env(safe-area-inset-right)) env(safe-area-inset-bottom, 2px) max(10px, env(safe-area-inset-left));
+  }
+
+  .top-bar {
+    height: 40px;
+    padding: 0 10px;
+    border-radius: 12px;
+  }
+
+  .team-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .team-name {
+    font-size: 10px;
+  }
+
+  .team-score {
+    font-size: 20px;
+  }
+
+  .turn-pill {
+    font-size: 11px;
+    padding: 2px 10px;
+  }
+
+  .game-title {
+    font-size: 11px;
+  }
+
+  .icon-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+
+  .bottom-bar {
+    height: 44px;
+    padding: 0 10px;
+    border-radius: 12px;
+  }
+
+  .roster-dot {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+
+  .active-char-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+  }
+
+  .timer-text {
+    font-size: 10px;
+  }
+
+  .btn-ready-lock {
+    height: 34px;
+    padding: 0 16px;
+    font-size: 12px;
+    border-radius: 10px;
+  }
+
+  .arena-container {
+    padding: 1px 0;
+  }
+
+  #game-canvas {
+    max-height: calc(100dvh - 90px);
+    border-radius: 16px;
+  }
+
+  /* Compact Overlay Screens */
+  .lobby-card,
+  .selector-card,
+  .room-lobby-card,
+  .settings-modal-card,
+  .stats-modal-card,
+  .modal-box,
+  .sudden-death-card,
+  .ios-guide-card {
+    max-height: 94dvh;
+    max-height: 94vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px 16px;
+    border-radius: 16px;
+  }
+
+  .lobby-title {
+    font-size: 20px;
+  }
+
+  .lobby-subtitle {
+    font-size: 11px;
+    margin-bottom: 8px;
+  }
+
+  .mode-grid {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .mode-card {
+    padding: 8px 12px;
+    border-radius: 12px;
+  }
+
+  .mode-icon {
+    font-size: 24px;
+  }
+
+  .mode-name {
+    font-size: 13px;
+  }
+
+  .mode-desc {
+    font-size: 11px;
+  }
+
+  .character-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .char-card-item {
+    padding: 4px 6px;
+  }
+
+  .char-detail-preview {
+    padding: 8px 12px;
+    gap: 10px;
+  }
+
+  .preview-canvas-box {
+    width: 75px;
+    height: 75px;
+  }
+
+  #preview-canvas {
+    width: 75px;
+    height: 75px;
+  }
+
+  .btn-primary-large {
+    padding: 10px 18px;
+    font-size: 13px;
+    border-radius: 12px;
+  }
+}
+
 @media (max-width: 680px) {
   .room-teams-container {
     grid-template-columns: 1fr;
@@ -1714,5 +2004,12 @@ body.pseudo-fullscreen-active {
   .room-char-row {
     grid-template-columns: repeat(4, 1fr);
   }
+  .top-actions {
+    gap: 4px;
+  }
+  .team-info {
+    gap: 1px;
+  }
 }
+
 

@@ -4,8 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#090d16">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BolaBola">
+  <meta name="application-name" content="BolaBola League">
+  <meta name="description" content="BolaBola League - Game Sepak Bola Meja Fisika Turn-Based Simultan 60 FPS Bergaya Bobble League">
+
+  <!-- PWA Manifest & Icons -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+
   <title>BolaBola - Turn-Based Physics Tabletop Soccer</title>
   
   <link rel="stylesheet" href="css/style.css">
@@ -153,6 +164,9 @@
       <div class="lobby-action-row" id="lobby-action-row-solo">
         <button id="btn-proceed-customizer" class="btn-primary-large">
           LANJUT KE PEMILIHAN TIM & KOIN ➔
+        </button>
+        <button id="btn-pwa-install" class="btn-pwa-install hidden" title="Pasang Game di Ponsel (PWA)">
+          📲 PASANG APLIKASI DI PERANGKAT
         </button>
       </div>
     </div>
@@ -399,6 +413,14 @@
           </div>
           <input type="checkbox" id="check-haptic" checked class="checkbox-toggle" />
         </div>
+        <!-- PWA Install Shortcut di Pengaturan -->
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="setting-name">Aplikasi Layar Utama (PWA):</span>
+            <small class="setting-desc">Pasang game tanpa bar browser & mainkan lebih cepat</small>
+          </div>
+          <button id="btn-pwa-install-settings" class="btn-install-shortcut">📲 Pasang Game</button>
+        </div>
       </div>
 
       <div class="settings-footer">
@@ -446,6 +468,33 @@
       <h3 class="shield-title">Putar Ponsel Anda</h3>
       <p class="shield-desc">Game ini dirancang untuk pengalaman optimal dalam mode <strong>Horizontal (Landscape)</strong>.</p>
       <button id="btn-force-rotate" class="btn-force-rotate">Paksa Putar Tampilan (Landscape)</button>
+    </div>
+  </div>
+
+  <!-- OVERLAY 7: IOS PWA INSTALL GUIDE MODAL -->
+  <div id="ios-install-modal" class="overlay-screen hidden">
+    <div class="ios-guide-card">
+      <div class="ios-guide-header">
+        <span class="ios-guide-icon">📲</span>
+        <h3 class="ios-guide-title">Pasang di iPhone / iPad</h3>
+        <button id="btn-close-ios-install" class="icon-close-btn" aria-label="Tutup Panduan">✕</button>
+      </div>
+      <p class="ios-guide-desc">Pasang BolaBola ke Layar Utama iPhone untuk pengalaman bermain layar penuh 100% tanpa bilah browser:</p>
+      <div class="ios-steps-list">
+        <div class="ios-step-item">
+          <div class="step-num">1</div>
+          <div class="step-text">Ketuk tombol <strong>Bagikan (Share)</strong> <span class="ios-icon-badge">📤</span> di bilah bawah Safari.</div>
+        </div>
+        <div class="ios-step-item">
+          <div class="step-num">2</div>
+          <div class="step-text">Gulir ke bawah dan pilih <strong>'Tambah ke Layar Utama' (Add to Home Screen)</strong> <span class="ios-icon-badge">➕</span>.</div>
+        </div>
+        <div class="ios-step-item">
+          <div class="step-num">3</div>
+          <div class="step-text">Ketuk <strong>'Tambah'</strong> di pojok kanan atas. Buka game langsung dari ikon di homescreen Anda!</div>
+        </div>
+      </div>
+      <button onclick="document.getElementById('ios-install-modal').classList.add('hidden')" class="btn-primary" style="width: 100%; margin-top: 12px;">SAYA MENGERTI 👍</button>
     </div>
   </div>
 

@@ -5,6 +5,7 @@ import { PhysicsEngine } from './physics/engine.js';
 import { SlingshotController } from './controls/slingshot.js';
 import { SoundFX } from './audio/soundFX.js';
 import { OrientationManager } from './controls/orientation.js';
+import { PWAManager } from './controls/pwaManager.js';
 import { NetworkClient } from './network/networkClient.js';
 import { TurnManager } from './network/turnManager.js';
 
@@ -26,8 +27,9 @@ export class Game {
       soundFX: this.soundFX
     });
 
-    // Orientasi Layar
+    // Orientasi Layar & PWA Manager
     this.orientation = new OrientationManager();
+    this.pwa = new PWAManager();
 
     // Game Mode & Network
     this.gameMode = 'SOLO'; // 'SOLO' | 'LOCAL_2P' | 'ONLINE'

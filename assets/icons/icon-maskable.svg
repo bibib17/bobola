@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="60%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </radialGradient>
+    <radialGradient id="goldGrad" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="40%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </radialGradient>
+    <radialGradient id="cyanGrad" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#e0f2fe"/>
+      <stop offset="50%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </radialGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background Rounded Rect -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  <rect width="512" height="512" rx="112" stroke="#38bdf8" stroke-width="8" stroke-opacity="0.3"/>
+
+  <!-- Outer Energy Glow Ring -->
+  <circle cx="256" cy="256" r="180" stroke="#38bdf8" stroke-width="6" stroke-dasharray="24 16" stroke-opacity="0.6" filter="url(#glow)"/>
+
+  <!-- Main Golden Coin Body -->
+  <circle cx="256" cy="256" r="148" fill="url(#goldGrad)" stroke="#fef08a" stroke-width="10"/>
+  <circle cx="256" cy="256" r="132" fill="none" stroke="#78350f" stroke-width="4" stroke-opacity="0.4"/>
+
+  <!-- Soccer Ball Center Circle -->
+  <circle cx="256" cy="256" r="88" fill="#ffffff" stroke="#1e293b" stroke-width="6"/>
+
+  <!-- Pentagon Pattern in Center -->
+  <polygon points="256,204 296,233 281,280 231,280 216,233" fill="#0f172a"/>
+
+  <!-- Seam Lines extending from pentagon -->
+  <line x1="256" y1="204" x2="256" y2="170" stroke="#0f172a" stroke-width="6" stroke-linecap="round"/>
+  <line x1="296" y1="233" x2="330" y2="218" stroke="#0f172a" stroke-width="6" stroke-linecap="round"/>
+  <line x1="281" y1="280" x2="310" y2="315" stroke="#0f172a" stroke-width="6" stroke-linecap="round"/>
+  <line x1="231" y1="280" x2="202" y2="315" stroke="#0f172a" stroke-width="6" stroke-linecap="round"/>
+  <line x1="216" y1="233" x2="182" y2="218" stroke="#0f172a" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- Dynamic Lightning Bolt Symbol (Top Right) -->
+  <path d="M370 120 L335 190 L365 190 L320 260 L345 205 L315 205 Z" fill="#facc15" stroke="#ca8a04" stroke-width="3" filter="url(#glow)"/>
+
+  <!-- Stylized Star Badges -->
+  <circle cx="160" cy="150" r="12" fill="#ef4444"/>
+  <circle cx="352" cy="362" r="12" fill="#3b82f6"/>
+</svg>

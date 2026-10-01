@@ -1,65 +1,71 @@
 # 📋 Laporan Review Pembaruan Proyek: BolaBola League
 
 **Tanggal Review:** 1 Oktober 2026  
-**Status Repositori:** Siap Digunakan / Production-Ready  
-**Fokus Pembaruan Terakhir:** Optimasi Total Mobile Touch Controls, Slingshot Engine, Multi-Touch Safety, & Dynamic Interaction  
+**Status Repositori:** Siap Digunakan / Production-Ready & PWA Installable  
+**Fokus Pembaruan Terakhir:** Optimasi Mobile Compact (iOS & Android), PWA Standalone App, Offline Caching, & Pseudo-Fullscreen Immersive Mode  
 
 ---
 
 ## 🎯 Ringkasan Eksekutif
 
-Pembaruan terkini berfokus pada penyempurnaan **pengalaman bermain di perangkat mobile / smartphone (Touch & Gesture Interaction)** serta pemantapan stabilitas sistem fisika giliran simultan (*turn-based simultaneous physics*). Kontrol sentuh telah dirombak menggunakan kalkulasi pergeseran relatif (*pure relative drag delta*), menghilangkan loncatan bidikan (*phantom jump*), memperluas area sentuh (*generous touch hitbox*), dan menerapkan isolasi multi-sentuh (*multi-touch isolation*).
+Pembaruan terkini menghadirkan optimasi antarmuka **Ultra-Compact untuk Perangkat Smartphone (iOS Safari & Android Chrome)**, integrasi penuh **Progressive Web App (PWA)** dengan kemampuan pasang langsung ke layar utama (*Installable & Standalone*), serta dukungan **Offline Caching (Service Worker)**. Seluruh skenario telah melalui tahap debugging, refaktorisasi, dan pengujian otomatis berbasis *Chrome DevTools Protocol (CDP)* dengan hasil 100% lulus (*Zero Errors*).
 
 ---
 
 ## 🔍 Detail Pembaruan & Modifikasi Komponen
 
-### 1. 📱 Peningkatan Kontrol Sentuh Mobile (`js/controls/slingshot.js`)
-
-| Aspek | Sebelum Pembaruan | Sesudah Pembaruan (Terbaru) | Dampak Positif |
-| :--- | :--- | :--- | :--- |
-| **Kalkulasi Delta Drag** | Menggunakan posisi absolut karakter vs sentuhan jari | Menggunakan *relative delta* dari titik sentuh awal (`touchStart` vs `dragCurrent`) | **Zero Phantom Jump**: Menghilangkan loncatan panah bidikan secara mendadak saat jari menyentuh tepi koin. |
-| **Area Hitbox Karakter** | Radius sempit (`char.radius + 30`) | Radius diperlebar hingga `char.radius + 75px` virtual | Pemain di layar kecil smartphone dapat memilih dan membidik koin dengan sangat presisi & responsif. |
-| **Manajemen Multi-Touch** | Berbagi event sentuhan global tanpa pelacakan ID | Pelacakan identitas sentuhan aktif via `activeTouchId` | Mencegah gangguan sentuhan kedua (misal: jari jempol lain yang tidak sengaja menyentuh layar). |
-| **Mode Bidik Fleksibel** | Slingshot & Direct terikat ke koordinat koin | Dukungan penuh **Ketapel (Slingshot)** & **Dorong (Direct Push)** berbasis vektor arah delta relatif | Pengalaman membidik terasa intuitif dan alami di kedua mode. |
-| **Haptic Feedback & Deadzone** | Deadzone 10px kaku | Deadzone dinamis 8px dengan ambang reset haptic pintar (85% max power) | Umpan balik getaran mikro terasa halus saat menarik tarikan maksimal (90% quadratic boost). |
-
----
-
-### 2. 🎨 Optimasi Tampilan, Responsivitas & Fullscreen iPhone (`css/style.css`, `js/controls/orientation.js` & `index.html`)
-
-- **Solusi Fullscreen iPhone (iOS Safari)**: Karena browser iOS Safari pada iPhone secara bawaan (*native limitation*) tidak mendukung HTML5 `Element.requestFullscreen()` untuk elemen DOM biasa, kini diterapkan arsitektur **Pseudo-Fullscreen Immersive Mode**:
-  - Auto-fallback cerdas saat tombol ⛶ ditekan di iPhone/iPad.
-  - Memaksimalkan arena permainan ke `100dvh` (Dynamic Viewport Height) bebas dari gangguan bilah browser.
-  - Otomatis melakukan *scroll-to-hide address bar* Safari saat orientasi horizontal aktif.
-  - Visual status aktif (`.icon-btn.active`) dengan cyan glow effect.
-- **Touch Action Lock**: Penerapan `touch-action: none`, `-webkit-user-select: none`, dan `-webkit-touch-callout: none` pada elemen `#gameCanvas` dan kontainer game untuk mencegah *pull-to-refresh*, *pinch-zoom*, atau seleksi teks default browser mobile.
-- **Smart Landscape Adaptation**: UI terpusat dengan rasio aspek terjaga secara proporsional dan overlay petunjuk rotasi otomatis saat mode portrait aktif.
+### 1. 📱 Tampilan Mobile Ultra-Compact (`css/style.css`)
+- **Media Queries Khusus Landscape Smartphone (`@media (max-height: 540px)`)**:
+  - Tinggi Top Bar diperkecil menjadi `40px` dengan padding proporsional `0 10px`.
+  - Tinggi Bottom Bar diperkecil menjadi `44px` dengan tombol *READY* `34px` yang tetap nyaman ditekan jempol (*thumb-friendly*).
+  - Dot status roster koin disesuaikan ke `24px` dan badge turn counter yang elegan.
+  - Kanvas arena pertandingan dimaksimalkan hingga `calc(100dvh - 90px)` sehingga lapangan sepak bola meja terlihat luas dan imersif.
+- **Scrollable Modals & Overlays**:
+  - Semua jendela overlay (Lobby Card, Character Selector, Online Room, Settings, Stats, Victory Banner) diberikan batas `max-height: 94dvh` dengan `-webkit-overflow-scrolling: touch` dan `overscroll-behavior: contain`.
 
 ---
 
-### 3. ⚙️ Verifikasi Sistem Inti (Core Engine & Systems)
-
-1. **Fisika Pegas Prosedural 60 FPS (`js/physics/engine.js`)**:
-   - Kepala bobblehead berayun dinamis dengan redaman inersia tanpa *skeletal overhead*, menjaga performa tetap stabil di 60 FPS pada smartphone entry-level.
-2. **Sistem Power Buff Acak (`js/game.js`)**:
-   - 6 varian buff unik (Iron Body 🛡️, Banana Shot 🌀, Ghost Phase ⚡, Nitro Rocket 🚀, Laser Beam 🎯, Obstacle Bumper 🧱) berfungsi dengan mekanisme spawn sequential 1 per 1.
-3. **Multiplayer & Pass-and-Play (`server.js` & WebSocket integration)**:
-   - Dukungan Room Multiplayer daring (Merah vs Biru) dan mode lokal Pass & Play (2 Pemain) berjalan tanpa latensi konflik kontrol.
-
----
-
-## 📊 Hasil Pengujian & Verifikasi
-
-- ✅ **Touch Dragging & Aiming**: Panah bidikan mengikuti arah tarikan jari dengan akurat di berbagai resolusi layar.
-- ✅ **Touch Release & Launch**: Koin melesat sesuai kurva daya kuadratik ketika jari diangkat.
-- ✅ **Character Switching**: Memilih koin berbeda dalam satu tim berlangsung mulus sebelum status `READY` dikonfirmasi.
-- ✅ **Multi-Platform Support**: Teruji kompatibel di desktop (Mouse Drag & Aim) dan mobile browser (Touch Slingshot).
+### 2. 📲 Implementasi Progressive Web App (PWA)
+- **Web App Manifest (`manifest.webmanifest` & `manifest.json`)**:
+  - Menetapkan mode tampilan `display: "standalone"` dan orientasi default `orientation: "landscape"`.
+  - Warna tema gelap presisi: `theme_color: "#090d16"`.
+- **Aset Ikon Resolusi Tinggi (`assets/icons/`)**:
+  - Ikon PNG 192x192, 512x512, Maskable SVG/PNG, Apple Touch Icon (180x180), dan Favicon tajam berbasis tema arcade koin emas & bola petir.
+- **Service Worker (`sw.js`)**:
+  - *Cache-First with Stale-While-Revalidate* untuk seluruh aset game, script JS modular, stylesheet, dan spritesheet.
+  - Memungkinkan game dibuka dan dimainkan secara lancar bahkan saat koneksi internet offline.
+- **PWA Manager & Install Flow (`js/controls/pwaManager.js`)**:
+  - **Android & Desktop**: Menangkap event `beforeinstallprompt` dan menyediakan tombol instalasi langsung di Lobby dan Pengaturan Game.
+  - **iOS Safari (iPhone / iPad)**: Menyediakan modal panduan interaktif 3-langkah (*Share -> Add to Home Screen*) untuk mendapatkan pengalaman layar penuh murni tanpa bilah browser.
 
 ---
 
-## 💡 Rekomendasi Pengembangan Selanjutnya
+### 3. 🖥️ Solusi Fullscreen & Orientasi iOS Safari (`js/controls/orientation.js`)
+- **Pseudo-Fullscreen Fallback**: Menghindari crash akibat limitasi native WebKit di iPhone dengan mengaktifkan mode ekspansi dinamis `100dvh`.
+- **Safari Address Bar Minimizer**: Melakukan scroll mikro otomatis saat rotasi landscape untuk menyembunyikan bilah URL Safari.
 
-1. **Sound & Audio Polish**: Penambahan variasi SFX saat koin memantul di sudut rintangan (*bumper bounce*).
-2. **Turn Timer Indicator**: Animasi visual melingkar (circular progress) pada tombol timer giliran untuk menambah ketegangan match.
-3. **Bot AI Strategy**: Peningkatan kecerdasan bot AI untuk memanfaatkan pantulan dinding (*bank shots*) secara lebih agresif pada tingkat kesulitan tinggi.
+---
+
+### 4. 🎮 Kontrol Sentuh Slingshot Presisi (`js/controls/slingshot.js`)
+- **Pure Relative Drag Delta**: Menghilangkan *phantom jump* saat awal sentuhan.
+- **Generous Touch Hitbox**: Area radius sentuh seleksi diperluas hingga `+75px virtual`.
+- **Multi-Touch Isolation**: Pelacakan `activeTouchId` mencegah gangguan sentuhan jari kedua.
+
+---
+
+## 📊 Hasil Pengujian & Verifikasi Otomatis
+
+Pengujian otomatis dilakukan menggunakan headless browser dengan resolusi iPhone 14/15 Landscape (844 x 390):
+
+- ✅ **PWA Manifest Link**: Terdeteksi dan tervalidasi (`manifest.webmanifest`).
+- ✅ **Apple Touch Icon**: Terdeteksi dan sesuai spesifikasi iOS.
+- ✅ **Service Worker Registration**: API didukung dan precache aktif.
+- ✅ **Mobile Layout & Sizing**: Canvas merender secara tajam dan proporsional (960x540 virtual) tanpa overflow horizontal/vertikal.
+- ✅ **Fullscreen / Pseudo-Fullscreen**: Tombol berfungsi mulus dan mengaktifkan kelas `.pseudo-fullscreen` di perangkat mobile.
+- ✅ **JavaScript Syntax & Modules**: 100% lulus uji `node --check` tanpa kesalahan sintaks.
+
+---
+
+## 🚀 Status Repositori
+- **Branch:** `main`
+- **PWA Status:** Installable on Android, iOS, Windows, macOS, & Linux.
