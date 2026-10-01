@@ -22,14 +22,15 @@ export class NetworkClient {
     const protocol = isSecure ? 'wss:' : 'ws:';
     const hostname = window.location.hostname || 'localhost';
 
-    // Jika diakses dari GitHub Pages
-    if (hostname.includes('github.io')) {
-      return `wss://bobola.onrender.com`;
+    // Jika diakses secara lokal (Localhost / XAMPP / IP LAN lokal)
+    const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.endsWith('.local');
+    if (isLocal) {
+      const port = (window.location.port && window.location.port !== '80' && window.location.port !== '443') ? window.location.port : '3000';
+      return `${protocol}//${hostname}:${port}`;
     }
 
-    // Jika diakses secara lokal (Localhost / Apache XAMPP / IP LAN WiFi)
-    const port = (window.location.port && window.location.port !== '80' && window.location.port !== '443') ? window.location.port : '3000';
-    return `${protocol}//${hostname}:${port}`;
+    // Jika diakses dari Web Hosting Publik (InfinityFree, GitHub Pages, dll)
+    return `wss://bobola.onrender.com`;
   }
 
   connect() {

@@ -78,6 +78,27 @@ export class MobileUXManager {
     }
 
     this.saveProfile();
+
+    // Kirim sinkronisasi ke backend API MySQL jika tersedia
+    try {
+      const gameInstance = this.getGameInstance ? this.getGameInstance() : window.game;
+      const payload = {
+        player_name: (gameInstance && gameInstance.userPlayerName) ? gameInstance.userPlayerName : 'Player 1',
+        game_mode: (gameInstance && gameInstance.gameMode) ? gameInstance.gameMode : 'SOLO',
+        score_red: (gameInstance && gameInstance.scoreRed) ? gameInstance.scoreRed : 0,
+        score_blue: (gameInstance && gameInstance.scoreBlue) ? gameInstance.scoreBlue : 0,
+        winning_team: isWin ? (gameInstance && gameInstance.userTeam ? gameInstance.userTeam : 'RED') : ((gameInstance && gameInstance.userTeam === 'RED') ? 'BLUE' : 'RED'),
+        is_win: isWin ? 1 : 0,
+        goals_scored: goalsScored,
+        buffs_taken: buffsTaken,
+        char_key: (gameInstance && gameInstance.userCharKey) ? gameInstance.userCharKey : 'ZIGGY'
+      };
+      fetch('api/save_match.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(() => {});
+    } catch (e) {}
   }
 
   getRankTitle() {
