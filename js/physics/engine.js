@@ -248,7 +248,7 @@ export class PhysicsEngine {
     // Deteksi Mulut Gawang
     const inGoalVertical = obj.y >= this.goalTop && obj.y <= this.goalBottom;
 
-    // Sisi Kiri
+    // Sisi Kiri (Gawang Tim Merah - jika bola masuk, Tim Biru mencetak gol)
     if (obj.x < left) {
       if (inGoalVertical && isBall) {
         // Bola masuk ke dalam ruang jaring gawang kiri
@@ -265,8 +265,8 @@ export class PhysicsEngine {
           obj.vy = -Math.abs(obj.vy) * 0.3; // Redam di jaring bawah
         }
 
-        // Gol tercatat saat seluruh bola melintasi garis gawang kiri (Tim Biru mencetak gol)
-        if (obj.x + obj.radius < this.rinkLeft) {
+        // Gol tercatat saat bola melintasi garis gawang kiri (Tim Biru mencetak gol)
+        if (obj.x <= this.rinkLeft + 4) {
           if (onGoalCallback) onGoalCallback('BLUE');
         }
       } else {
@@ -283,7 +283,7 @@ export class PhysicsEngine {
       }
     }
 
-    // Sisi Kanan
+    // Sisi Kanan (Gawang Tim Biru - jika bola masuk, Tim Merah mencetak gol)
     if (obj.x > right) {
       if (inGoalVertical && isBall) {
         // Bola masuk ke dalam ruang jaring gawang kanan
@@ -300,8 +300,8 @@ export class PhysicsEngine {
           obj.vy = -Math.abs(obj.vy) * 0.3; // Redam di jaring bawah
         }
 
-        // Gol tercatat saat seluruh bola melintasi garis gawang kanan (Tim Merah mencetak gol)
-        if (obj.x - obj.radius > this.rinkRight) {
+        // Gol tercatat saat bola melintasi garis gawang kanan (Tim Merah mencetak gol)
+        if (obj.x >= this.rinkRight - 4) {
           if (onGoalCallback) onGoalCallback('RED');
         }
       } else {

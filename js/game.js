@@ -969,31 +969,24 @@ export class Game {
     }
     this.updateScoreUI();
 
-    // Trigger animasi selebrasi karakter
+    // Trigger animasi selebrasi karakter di lapangan
     this.entities.forEach(char => {
       if (char.team === scoringTeam) {
         char.triggerGoalJoy();
       }
     });
 
-    // Tampilkan Banner Gol
-    const banner = document.getElementById('goal-banner');
-    const bannerTeam = document.getElementById('goal-team');
-    if (banner && bannerTeam) {
-      bannerTeam.textContent = scoringTeam === 'RED' ? 'TIM MERAH (THE STRIKERS) MENCETAK GOL!' : 'TIM BIRU (THE ROVERS) MENCETAK GOL!';
-      bannerTeam.style.color = scoringTeam === 'RED' ? '#EF4444' : '#3B82F6';
-      banner.classList.remove('hidden');
-    }
+    // Callout mengambang langsung di atas gawang pencetak gol
+    const calloutX = scoringTeam === 'RED' ? this.physics.rinkRight : this.physics.rinkLeft;
+    this.physics.addCallout(calloutX, this.physics.height / 2 - 20, '⚽ GOOOAAAL! ⚽', scoringTeam === 'RED' ? '#EF4444' : '#3B82F6');
 
-    this.physics.addCallout(this.VIRTUAL_WIDTH / 2, this.VIRTUAL_HEIGHT / 2 - 25, '⚽ GOOOAAAL! ⚽', scoringTeam === 'RED' ? '#EF4444' : '#3B82F6');
-
-    // Partikel Konfeti Emas & Tim
-    for (let i = 0; i < 110; i++) {
+    // Partikel Konfeti Emas & Tim dari area gawang
+    for (let i = 0; i < 90; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const speed = 120 + Math.random() * 340;
+      const speed = 100 + Math.random() * 280;
       this.confetti.push({
-        x: this.VIRTUAL_WIDTH / 2,
-        y: this.VIRTUAL_HEIGHT / 2,
+        x: scoringTeam === 'RED' ? this.physics.rinkRight : this.physics.rinkLeft,
+        y: this.physics.height / 2,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         color: ['#EF4444', '#3B82F6', '#FACC15', '#10B981', '#F472B6'][Math.floor(Math.random() * 5)],
@@ -1006,7 +999,25 @@ export class Game {
       this.network.syncGoal(scoringTeam);
     }
 
-    // Cek Kondisi Kemenangan
+    // DELAY NOTIFIKASI GOAL BANNER (1200ms) agar pemain dapat melihat bola masuk & memantul di jaring gawang
+    if (this.goalBannerTimeout) {
+      clearTimeout(this.goalBannerTimeout);
+      this.goalBannerTimeout = null;
+    }
+    this.goalBannerTimeout = setTimeout(() => {
+      this.goalBannerTimeout = null;
+      if (this.turnManager.phase === 'LOBBY' || this.turnManager.phase === 'GAMEOVER') return;
+
+      const banner = document.getElementById('goal-banner');
+      const bannerTeam = document.getElementById('goal-team');
+      if (banner && bannerTeam) {
+        bannerTeam.textContent = scoringTeam === 'RED' ? 'TIM MERAH (THE STRIKERS) MENCETAK GOL!' : 'TIM BIRU (THE ROVERS) MENCETAK GOL!';
+        bannerTeam.style.color = scoringTeam === 'RED' ? '#EF4444' : '#3B82F6';
+        banner.classList.remove('hidden');
+      }
+    }, 1200);
+
+    // Cek Kondisi Kemenangan & Reset Formasi setelah selebrasi
     if (this.goalTimeout) {
       clearTimeout(this.goalTimeout);
       this.goalTimeout = null;
@@ -1024,7 +1035,7 @@ export class Game {
       } else {
         this.resetFormation();
       }
-    }, 2800);
+    }, 3200);
   }
 
   triggerSuddenDeath() {
@@ -1126,6 +1137,12 @@ export class Game {
       clearTimeout(this.goalTimeout);
       this.goalTimeout = null;
     }
+    if (this.goalBannerTimeout) {
+      clearTimeout(this.goalBannerTimeout);
+      this.goalBannerTimeout = null;
+    }
+    const banner = document.getElementById('goal-banner');
+    if (banner) banner.classList.add('hidden');
     const endModal = document.getElementById('match-end-modal');
     if (endModal) endModal.classList.add('hidden');
     const sdPill = document.getElementById('sudden-death-pill');
@@ -1148,6 +1165,10 @@ export class Game {
     if (this.goalTimeout) {
       clearTimeout(this.goalTimeout);
       this.goalTimeout = null;
+    }
+    if (this.goalBannerTimeout) {
+      clearTimeout(this.goalBannerTimeout);
+      this.goalBannerTimeout = null;
     }
 
     // 1. Hentikan Turn Manager & Timer Loop
