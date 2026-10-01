@@ -55,10 +55,18 @@ Seluruh roadmap fase mobile dari [prd_mobile.md](file:///c:/xampp/htdocs/bolabol
 
 ---
 
+### 5. 🥅 Perbaikan Seleksi Pemain Dekat Gawang (`js/controls/slingshot.js`)
+- **Dukungan Sentuhan Area Gawang & Margin**: Event listener `touchstart`/`mousedown` kini diikat ke `this.canvas` dan kontainer `.arena-container` sehingga sentuhan jempol di tepi kiri/kanan layar atau jaring gawang tetap terdeteksi 100%.
+- **Hitbox Radius Diperlebar ke 160px**: Memastikan sentuhan jari di dalam kotak penalti/gawang langsung mengunci koin terdekat (Rocco #8 / Kiper / Bek).
+- **Implementasi `setSelectedCharacter`**: Memperbaiki fungsi seleksi koin via tombol dot roster bawah `[8]` tanpa error.
+
+---
+
 ## 📊 Hasil Pengujian & Verifikasi Otomatis (CDP Test Suite)
 
 - ✅ **PWA Manifest Link & Apple Icon**: Terdeteksi dan sesuai standar W3C & Apple.
 - ✅ **Service Worker**: Status aktif dan siap melayani cache offline.
+- ✅ **Goalkeeper / Goal Area Touch Selection (`test_goal_keeper_click.js`)**: Sentuhan di area gawang dan klik tombol dot roster `[8]` berhasil 100% memilih Rocco #8 dan mengaktifkan bidikan.
 - ✅ **Mobile Landscape Canvas**: Merender tajam pada rasio 960x540 di resolusi layar 844x390 (iPhone 14/15 Landscape).
 - ✅ **Mobile UX & Floating Emotes**: Berfungsi mulus tanpa drop frame (60 FPS stabil).
 - ✅ **JavaScript Syntax Check (`node --check`)**: 100% lulus tanpa kesalahan.

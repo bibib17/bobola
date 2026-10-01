@@ -41,6 +41,10 @@ export class SlingshotController {
     this.bindEvents();
   }
 
+  setSelectedCharacter(char) {
+    this.selectedChar = char;
+  }
+
   setAimMode(mode) {
     this.aimMode = mode;
   }
@@ -80,7 +84,7 @@ export class SlingshotController {
       };
     }
 
-    // Koordinat normal layar
+    // Koordinat normal layar (dengan auto clamp agar touch di margin gawang tetap terpetakan)
     const scaleX = this.virtualWidth / rect.width;
     const scaleY = this.virtualHeight / rect.height;
 
@@ -91,10 +95,17 @@ export class SlingshotController {
   }
 
   bindEvents() {
+    const container = this.canvas.parentElement || this.canvas;
+
     // === MOUSE EVENTS (DESKTOP) ===
-    this.canvas.addEventListener('mousedown', (e) => {
+    const onMouseDown = (e) => {
       this.handleStart(e.clientX, e.clientY);
-    });
+    };
+
+    this.canvas.addEventListener('mousedown', onMouseDown);
+    if (container !== this.canvas) {
+      container.addEventListener('mousedown', onMouseDown);
+    }
 
     window.addEventListener('mousemove', (e) => {
       if (this.isDragging) {
@@ -109,7 +120,7 @@ export class SlingshotController {
     });
 
     // === TOUCH EVENTS (SMARTPHONE MOBILE) ===
-    this.canvas.addEventListener('touchstart', (e) => {
+    const onTouchStart = (e) => {
       if (this.isControlsLocked) return;
       if (e.changedTouches.length > 0 && this.activeTouchId === null) {
         const t = e.changedTouches[0];
@@ -119,7 +130,12 @@ export class SlingshotController {
         }
         if (e.cancelable) e.preventDefault();
       }
-    }, { passive: false });
+    };
+
+    this.canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+    if (container !== this.canvas) {
+      container.addEventListener('touchstart', onTouchStart, { passive: false });
+    }
 
     window.addEventListener('touchmove', (e) => {
       if (!this.isDragging || this.activeTouchId === null) return;
@@ -160,16 +176,33 @@ export class SlingshotController {
     const userTeam = userChar ? userChar.team : (this.selectedChar ? this.selectedChar.team : 'RED');
 
     // Cari karakter tim yang paling dekat dengan titik sentuhan jari
+    // Threshold diperbesar ke 160px agar koin kiper/bek yang berada di dekat bibir gawang
+    // dapat disentuh dan dibidik dengan sangat nyaman di smartphone
     let closestChar = null;
     let minDistance = Infinity;
-    const touchRadiusThreshold = 75; // Hitbox sentuhan jari luas & nyaman di HP (radius ~75px virtual)
+    const touchRadiusThreshold = 160;
 
     for (let char of entities) {
-      if (char.team === userTeam) {
+      // Prioritaskan koin di tim pemain (atau semua koin jika Pass & Play)
+      const isAllowedTeam = char.team === userTeam || !userChar;
+      if (isAllowedTeam) {
         const dist = Math.hypot(pos.x - char.x, pos.y - char.y);
         if (dist <= char.radius + touchRadiusThreshold && dist < minDistance) {
           minDistance = dist;
           closestChar = char;
+        }
+      }
+    }
+
+    // Fallback: Jika sentuhan berada di separuh lapangan tim tapi belum terpilih
+    if (!closestChar) {
+      for (let char of entities) {
+        if (char.team === userTeam) {
+          const dist = Math.hypot(pos.x - char.x, pos.y - char.y);
+          if (dist < minDistance && dist < 220) {
+            minDistance = dist;
+            closestChar = char;
+          }
         }
       }
     }

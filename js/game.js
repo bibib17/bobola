@@ -127,6 +127,7 @@ export class Game {
 
     // Mulai Loop Game 60 FPS
     this.lastTime = performance.now();
+    window.game = this;
     requestAnimationFrame((t) => this.loop(t));
   }
 
