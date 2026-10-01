@@ -8,6 +8,7 @@ export class NetworkClient {
     this.connected = false;
     this.roomId = null;
     this.playerId = null;
+    this.pendingQueue = [];
     this.onMessage = onMessage || (() => {});
     this.onStatusChange = onStatusChange || (() => {});
     this.reconnectTimer = null;
@@ -27,6 +28,7 @@ export class NetworkClient {
 
       this.ws.onopen = () => {
         this.connected = true;
+        this.flushQueue();
         this.onStatusChange(true, 'Terhubung ke server multiplayer');
       };
 
@@ -64,6 +66,18 @@ export class NetworkClient {
     this.connected = false;
     this.roomId = null;
     this.playerId = null;
+    this.pendingQueue = [];
+  }
+
+  flushQueue() {
+    while (this.pendingQueue.length > 0 && this.ws && this.ws.readyState === WebSocket.OPEN) {
+      const msg = this.pendingQueue.shift();
+      try {
+        this.ws.send(JSON.stringify(msg));
+      } catch (e) {
+        console.warn('Error flushing queued message:', e);
+      }
+    }
   }
 
   handleIncoming(data) {
@@ -81,26 +95,33 @@ export class NetworkClient {
       this.ws.send(JSON.stringify(data));
       return true;
     }
-    return false;
+    // Jika socket belum siap / connecting, tampung pesan ke antrean dan mulai koneksi
+    this.pendingQueue.push(data);
+    if (!this.ws || this.ws.readyState === WebSocket.CLOSED) {
+      this.connect();
+    }
+    return true;
   }
 
-  createRoom(roomId, playerName, team, charKey) {
+  createRoom(roomId, playerName, team, charKey, matchType = 'PARTY') {
     return this.send({
       type: 'CREATE_ROOM',
       roomId,
       playerName,
       team,
-      charKey
+      charKey,
+      matchType
     });
   }
 
-  joinRoom(roomId, playerName, team, charKey) {
+  joinRoom(roomId, playerName, team, charKey, matchType = 'PARTY') {
     return this.send({
       type: 'JOIN_ROOM',
       roomId,
       playerName,
       team,
-      charKey
+      charKey,
+      matchType
     });
   }
 

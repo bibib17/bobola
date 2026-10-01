@@ -481,10 +481,9 @@ export class Game {
         this.userPlayerName = inputPlayer && inputPlayer.value.trim() ? inputPlayer.value.trim() : 'Player 1';
         const code = inputRoom && inputRoom.value.trim() ? inputRoom.value.trim().toUpperCase() : ('BOLA' + Math.floor(10 + Math.random() * 89));
         if (inputRoom) inputRoom.value = code;
+        const matchType = this.gameMode === 'ONLINE_1V1' ? '1V1' : 'PARTY';
         this.network.connect();
-        setTimeout(() => {
-          this.network.createRoom(code, this.userPlayerName, this.userTeam, this.userCharKey);
-        }, 120);
+        this.network.createRoom(code, this.userPlayerName, this.userTeam, this.userCharKey, matchType);
       });
     }
 
@@ -492,10 +491,9 @@ export class Game {
       btnJoinRoom.addEventListener('click', () => {
         this.userPlayerName = inputPlayer && inputPlayer.value.trim() ? inputPlayer.value.trim() : 'Player 2';
         const code = inputRoom && inputRoom.value.trim() ? inputRoom.value.trim().toUpperCase() : 'BOLA1';
+        const matchType = this.gameMode === 'ONLINE_1V1' ? '1V1' : 'PARTY';
         this.network.connect();
-        setTimeout(() => {
-          this.network.joinRoom(code, this.userPlayerName, this.userTeam, this.userCharKey);
-        }, 120);
+        this.network.joinRoom(code, this.userPlayerName, this.userTeam, this.userCharKey, matchType);
       });
     }
 
@@ -1476,10 +1474,18 @@ export class Game {
   handleNetworkMessage(data) {
     switch (data.type) {
       case 'ROOM_JOINED': {
-        console.log(`Berhasil bergabung ke room: ${data.roomId}`);
+        console.log(`Berhasil bergabung ke room: ${data.roomId} (${data.matchType || 'PARTY'})`);
         this.roomId = data.roomId;
         this.playerId = data.playerId;
         this.hostId = data.hostId;
+        this.roomMatchType = data.matchType || (this.gameMode === 'ONLINE_1V1' ? '1V1' : 'PARTY');
+        if (this.roomMatchType === '1V1') {
+          this.gameMode = 'ONLINE_1V1';
+          this.turnManager.setMode('ONLINE_1V1');
+        } else {
+          this.gameMode = 'ONLINE';
+          this.turnManager.setMode('ONLINE');
+        }
         this.onlineRoomPlayers = data.players || [];
         this.isUserReadyInRoom = false;
 
@@ -1504,6 +1510,7 @@ export class Game {
       case 'PLAYER_READY_STATUS':
       case 'PLAYER_DISCONNECTED': {
         if (data.hostId) this.hostId = data.hostId;
+        if (data.matchType) this.roomMatchType = data.matchType;
         this.onlineRoomPlayers = data.players || [];
         this.renderRoomLobby();
         break;
@@ -1582,21 +1589,42 @@ export class Game {
     const charRow = document.getElementById('room-char-selection-row');
     const selectedCharName = document.getElementById('room-selected-char-name');
 
+    const is1v1 = (this.gameMode === 'ONLINE_1V1') || (this.roomMatchType === '1V1');
+
     if (codeDisplay) codeDisplay.textContent = this.roomId || 'BOLA1';
-    if (playerCount) playerCount.textContent = `${this.onlineRoomPlayers.length} / 8 Pemain`;
+    if (playerCount) {
+      playerCount.textContent = is1v1
+        ? `${this.onlineRoomPlayers.length} / 2 Kapten Tim`
+        : `${this.onlineRoomPlayers.length} / 8 Pemain`;
+    }
 
     const myInfo = this.onlineRoomPlayers.find(p => p.id === this.playerId);
     const isHost = (this.playerId === this.hostId) || (myInfo && myInfo.isHost) || (this.onlineRoomPlayers.length > 0 && this.onlineRoomPlayers[0].id === this.playerId);
 
+    const redPlayers = this.onlineRoomPlayers.filter(p => p.team === 'RED');
+    const bluePlayers = this.onlineRoomPlayers.filter(p => p.team === 'BLUE');
+
     if (statusPill) {
-      if (this.onlineRoomPlayers.length >= 2) {
-        statusPill.textContent = 'Siap Memulai Pertandingan!';
-        statusPill.style.color = '#34D399';
-        statusPill.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+      if (is1v1) {
+        if (redPlayers.length >= 1 && bluePlayers.length >= 1) {
+          statusPill.textContent = 'Duel 1v1 Siap Dimulai!';
+          statusPill.style.color = '#34D399';
+          statusPill.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+        } else {
+          statusPill.textContent = 'Menunggu Lawan (Pilih Tim Berbeda)...';
+          statusPill.style.color = '#FBBF24';
+          statusPill.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+        }
       } else {
-        statusPill.textContent = 'Menunggu Pemain Lain...';
-        statusPill.style.color = '#FBBF24';
-        statusPill.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+        if (this.onlineRoomPlayers.length >= 2) {
+          statusPill.textContent = 'Siap Memulai Pertandingan!';
+          statusPill.style.color = '#34D399';
+          statusPill.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+        } else {
+          statusPill.textContent = 'Menunggu Pemain Lain...';
+          statusPill.style.color = '#FBBF24';
+          statusPill.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+        }
       }
     }
 
@@ -1627,11 +1655,11 @@ export class Game {
     if (btnJoinRed) btnJoinRed.classList.toggle('active', this.userTeam === 'RED');
     if (btnJoinBlue) btnJoinBlue.classList.toggle('active', this.userTeam === 'BLUE');
 
-    // Render Slots Tim Merah (4 Slot)
-    const redPlayers = this.onlineRoomPlayers.filter(p => p.team === 'RED');
+    // Render Slots Tim Merah
     if (redSlots) {
       redSlots.innerHTML = '';
-      for (let i = 0; i < 4; i++) {
+      const maxSlots = is1v1 ? 1 : 4;
+      for (let i = 0; i < maxSlots; i++) {
         const p = redPlayers[i];
         const slotEl = document.createElement('div');
         if (p) {
@@ -1645,7 +1673,7 @@ export class Game {
             </div>
             <div class="room-slot-details">
               <span class="room-slot-name">${p.name} ${isMe ? '<small style="color:#facc15">(Kamu)</small>' : ''} ${p.isHost ? '<small style="color:#38bdf8">[Host]</small>' : ''}</span>
-              <span class="room-slot-char">${charDef.name} (${charDef.role.split('/')[0]})</span>
+              <span class="room-slot-char">${is1v1 ? '⭐ Kapten Tim Merah (4 Koin)' : `${charDef.name} (${charDef.role.split('/')[0]})`}</span>
             </div>
             <span class="room-slot-badge ${p.isReady ? 'ready' : 'waiting'}">${p.isReady ? 'READY ✓' : 'MEMILIH'}</span>
           `;
@@ -1655,17 +1683,17 @@ export class Game {
           }
         } else {
           slotEl.className = 'room-slot-item empty';
-          slotEl.innerHTML = `<span>Slot ${i + 1}: Bot Standby 🤖</span>`;
+          slotEl.innerHTML = `<span>${is1v1 ? 'Slot Kapten Merah Kosong' : `Slot ${i + 1}: Bot Standby 🤖`}</span>`;
         }
         redSlots.appendChild(slotEl);
       }
     }
 
-    // Render Slots Tim Biru (4 Slot)
-    const bluePlayers = this.onlineRoomPlayers.filter(p => p.team === 'BLUE');
+    // Render Slots Tim Biru
     if (blueSlots) {
       blueSlots.innerHTML = '';
-      for (let i = 0; i < 4; i++) {
+      const maxSlots = is1v1 ? 1 : 4;
+      for (let i = 0; i < maxSlots; i++) {
         const p = bluePlayers[i];
         const slotEl = document.createElement('div');
         if (p) {
@@ -1679,7 +1707,7 @@ export class Game {
             </div>
             <div class="room-slot-details">
               <span class="room-slot-name">${p.name} ${isMe ? '<small style="color:#facc15">(Kamu)</small>' : ''} ${p.isHost ? '<small style="color:#38bdf8">[Host]</small>' : ''}</span>
-              <span class="room-slot-char">${charDef.name} (${charDef.role.split('/')[0]})</span>
+              <span class="room-slot-char">${is1v1 ? '⭐ Kapten Tim Biru (4 Koin)' : `${charDef.name} (${charDef.role.split('/')[0]})`}</span>
             </div>
             <span class="room-slot-badge ${p.isReady ? 'ready' : 'waiting'}">${p.isReady ? 'READY ✓' : 'MEMILIH'}</span>
           `;
@@ -1689,7 +1717,7 @@ export class Game {
           }
         } else {
           slotEl.className = 'room-slot-item empty';
-          slotEl.innerHTML = `<span>Slot ${i + 1}: Bot Standby 🤖</span>`;
+          slotEl.innerHTML = `<span>${is1v1 ? 'Slot Kapten Biru Kosong' : `Slot ${i + 1}: Bot Standby 🤖`}</span>`;
         }
         blueSlots.appendChild(slotEl);
       }
@@ -1698,38 +1726,62 @@ export class Game {
     // Render 8 Character Chips
     if (charRow) {
       charRow.innerHTML = '';
-      Object.keys(CHARACTER_DEFS).forEach(key => {
-        const def = CHARACTER_DEFS[key];
-        const chip = document.createElement('div');
-        chip.className = `room-char-chip ${key === this.userCharKey ? 'active' : ''}`;
-        const sprite = spriteManager.getSprite(key, this.userTeam);
-
-        chip.innerHTML = `
-          <div class="room-chip-avatar" style="border: 1.5px solid ${def.accentColor}">
-            ${sprite ? `<canvas class="chip-canvas-sprite" width="26" height="26" style="width:26px;height:26px;border-radius:50%;display:block;"></canvas>` : (def.symbol || '⚽')}
+      if (is1v1) {
+        charRow.innerHTML = `
+          <div class="room-1v1-banner" style="font-size:11px; color:#38bdf8; padding:6px 12px; background:rgba(56,189,248,0.1); border-radius:8px; border:1px solid rgba(56,189,248,0.25); text-align:center; width:100%;">
+            ⚡ <strong>Mode 1v1 Team Duel:</strong> Anda memegang kendali penuh atas seluruh 4 koin di tim Anda secara simultan!
           </div>
-          <span class="room-chip-name">${def.name}</span>
         `;
-        if (sprite) {
-          const cc = chip.querySelector('.chip-canvas-sprite');
-          if (cc) cc.getContext('2d').drawImage(sprite, 0, 0, 26, 26);
-        }
+      } else {
+        const teamTakenKeys = this.onlineRoomPlayers
+          .filter(p => p.team === this.userTeam && p.id !== this.playerId)
+          .map(p => p.charKey);
 
-        chip.addEventListener('click', () => {
-          this.userCharKey = key;
-          this.network.changeTeam(this.userTeam, this.userCharKey);
-          this.soundFX.playBoing(1.2);
-          this.renderRoomLobby();
+        Object.keys(CHARACTER_DEFS).forEach(key => {
+          const def = CHARACTER_DEFS[key];
+          const isTaken = teamTakenKeys.includes(key);
+          const isSelected = key === this.userCharKey;
+          const chip = document.createElement('div');
+          chip.className = `room-char-chip ${isSelected ? 'active' : ''} ${isTaken ? 'disabled' : ''}`;
+          if (isTaken) {
+            chip.style.opacity = '0.4';
+            chip.style.cursor = 'not-allowed';
+            chip.title = 'Koin ini sudah dipilih rekan tim';
+          }
+          const sprite = spriteManager.getSprite(key, this.userTeam);
+
+          chip.innerHTML = `
+            <div class="room-chip-avatar" style="border: 1.5px solid ${def.accentColor}">
+              ${sprite ? `<canvas class="chip-canvas-sprite" width="26" height="26" style="width:26px;height:26px;border-radius:50%;display:block;"></canvas>` : (def.symbol || '⚽')}
+            </div>
+            <span class="room-chip-name">${def.name}</span>
+          `;
+          if (sprite) {
+            const cc = chip.querySelector('.chip-canvas-sprite');
+            if (cc) cc.getContext('2d').drawImage(sprite, 0, 0, 26, 26);
+          }
+
+          chip.addEventListener('click', () => {
+            if (isTaken) return;
+            this.userCharKey = key;
+            this.network.changeTeam(this.userTeam, this.userCharKey);
+            this.soundFX.playBoing(1.2);
+            this.renderRoomLobby();
+          });
+
+          charRow.appendChild(chip);
         });
-
-        charRow.appendChild(chip);
-      });
+      }
     }
 
     if (selectedCharName) {
-      const activeDef = CHARACTER_DEFS[this.userCharKey];
-      if (activeDef) {
-        selectedCharName.textContent = `${activeDef.name} (${activeDef.role.split('/')[0]})`;
+      if (is1v1) {
+        selectedCharName.textContent = this.userTeam === 'RED' ? 'The Strikers (4 Koin Merah)' : 'The Rovers (4 Koin Biru)';
+      } else {
+        const activeDef = CHARACTER_DEFS[this.userCharKey];
+        if (activeDef) {
+          selectedCharName.textContent = `${activeDef.name} (${activeDef.role.split('/')[0]})`;
+        }
       }
     }
   }

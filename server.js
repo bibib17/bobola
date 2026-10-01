@@ -65,9 +65,10 @@ const server = http.createServer((req, res) => {
 const rooms = new Map(); // roomId -> RoomState
 
 class Room {
-  constructor(id, hostId = null) {
+  constructor(id, hostId = null, matchType = 'PARTY') {
     this.id = id;
     this.hostId = hostId;
+    this.matchType = matchType; // '1V1' | 'PARTY'
     this.clients = new Set(); // Set of socket wrappers
     this.turn = 1;
     this.scoreRed = 0;
@@ -257,9 +258,10 @@ function handleClientMessage(client, msg) {
   switch (msg.type) {
     case 'CREATE_ROOM': {
       const roomId = (msg.roomId || Math.random().toString(36).substr(2, 5)).toUpperCase();
+      const matchType = msg.matchType || (msg.mode === 'ONLINE_1V1' ? '1V1' : 'PARTY');
       let room = rooms.get(roomId);
       if (!room) {
-        room = new Room(roomId, client.id);
+        room = new Room(roomId, client.id, matchType);
         rooms.set(roomId, room);
       }
       if (!room.hostId) room.hostId = client.id;
@@ -281,8 +283,26 @@ function handleClientMessage(client, msg) {
 
     case 'CHANGE_TEAM': {
       if (!client.room) return;
-      client.team = msg.team;
-      client.charKey = msg.charKey || client.charKey;
+      const targetTeam = msg.team || client.team;
+      let targetCharKey = msg.charKey || client.charKey;
+
+      // Pada Party Room, cegah duplikasi koin di tim yang sama jika koin sudah diambil rekan setim
+      if (client.room.matchType !== '1V1') {
+        const teamMembers = Array.from(client.room.playerAssignments.entries())
+          .filter(([pid, p]) => pid !== client.id && p.team === targetTeam);
+        
+        const isTaken = teamMembers.some(([_, p]) => p.charKey === targetCharKey);
+        if (isTaken) {
+          const allKeys = ['ROCCO', 'ZIGGY', 'MILO', 'BORIS', 'KIKI', 'TRIXIE', 'SPIKE', 'OLLIE'];
+          const availableKey = allKeys.find(k => !teamMembers.some(([_, p]) => p.charKey === k));
+          if (availableKey) {
+            targetCharKey = availableKey;
+          }
+        }
+      }
+
+      client.team = targetTeam;
+      client.charKey = targetCharKey;
       client.room.playerAssignments.set(client.id, {
         name: client.playerName,
         team: client.team,
@@ -292,6 +312,7 @@ function handleClientMessage(client, msg) {
       client.room.broadcast({
         type: 'ROOM_PLAYERS_UPDATE',
         hostId: client.room.hostId,
+        matchType: client.room.matchType,
         players: client.room.getPlayersData()
       });
       break;
@@ -400,6 +421,10 @@ function handleClientMessage(client, msg) {
       client.room.scoreBlue = 0;
       client.room.actions.clear();
 
+      for (const info of client.room.playerAssignments.values()) {
+        info.isReady = false;
+      }
+
       client.room.broadcast({
         type: 'MATCH_STARTED',
         turn: 1,
@@ -449,6 +474,7 @@ function joinRoom(client, room, playerName = 'Player', team = 'RED', charKey = '
     roomId: room.id,
     playerId: client.id,
     hostId: room.hostId,
+    matchType: room.matchType,
     players: room.getPlayersData(),
     gameState: room.state
   }));
@@ -456,6 +482,7 @@ function joinRoom(client, room, playerName = 'Player', team = 'RED', charKey = '
   room.broadcast({
     type: 'ROOM_PLAYERS_UPDATE',
     hostId: room.hostId,
+    matchType: room.matchType,
     players: room.getPlayersData()
   }, client);
 }
@@ -478,8 +505,17 @@ function handleClientDisconnect(client) {
         type: 'PLAYER_DISCONNECTED',
         playerId: client.id,
         hostId: room.hostId,
+        matchType: room.matchType,
         players: room.getPlayersData()
       });
+
+      // Jika disconnect terjadi saat game berlangsung (PLANNING) dan pemain yang tersisa semua sudah ready
+      if (room.state === 'PLANNING' && room.playerAssignments.size > 0) {
+        const allReady = Array.from(room.playerAssignments.values()).every(p => p.isReady);
+        if (allReady) {
+          triggerSimultaneousResolution(room);
+        }
+      }
     }
   }
 }
