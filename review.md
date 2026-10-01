@@ -26,8 +26,13 @@ Pembaruan terkini berfokus pada penyempurnaan **pengalaman bermain di perangkat 
 
 ---
 
-### 2. 🎨 Optimasi Tampilan & Responsivitas (`css/style.css` & `index.html`)
+### 2. 🎨 Optimasi Tampilan, Responsivitas & Fullscreen iPhone (`css/style.css`, `js/controls/orientation.js` & `index.html`)
 
+- **Solusi Fullscreen iPhone (iOS Safari)**: Karena browser iOS Safari pada iPhone secara bawaan (*native limitation*) tidak mendukung HTML5 `Element.requestFullscreen()` untuk elemen DOM biasa, kini diterapkan arsitektur **Pseudo-Fullscreen Immersive Mode**:
+  - Auto-fallback cerdas saat tombol ⛶ ditekan di iPhone/iPad.
+  - Memaksimalkan arena permainan ke `100dvh` (Dynamic Viewport Height) bebas dari gangguan bilah browser.
+  - Otomatis melakukan *scroll-to-hide address bar* Safari saat orientasi horizontal aktif.
+  - Visual status aktif (`.icon-btn.active`) dengan cyan glow effect.
 - **Touch Action Lock**: Penerapan `touch-action: none`, `-webkit-user-select: none`, dan `-webkit-touch-callout: none` pada elemen `#gameCanvas` dan kontainer game untuk mencegah *pull-to-refresh*, *pinch-zoom*, atau seleksi teks default browser mobile.
 - **Smart Landscape Adaptation**: UI terpusat dengan rasio aspek terjaga secara proporsional dan overlay petunjuk rotasi otomatis saat mode portrait aktif.
 
