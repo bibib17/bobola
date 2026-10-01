@@ -493,6 +493,7 @@ body.pseudo-fullscreen-active {
 .stats-modal-card,
 .modal-box,
 .sudden-death-card,
+.goal-banner-content,
 .ios-guide-card {
   margin: auto;
   flex-shrink: 0;
@@ -1236,10 +1237,14 @@ body.pseudo-fullscreen-active {
 /* Goal Celebration Banner */
 #goal-banner {
   background: rgba(15, 23, 42, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   animation: bannerPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .goal-banner-content {
+  margin: auto;
   text-align: center;
   background: var(--ui-glass);
   border: 2px solid var(--accent-gold);
