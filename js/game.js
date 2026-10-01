@@ -6,6 +6,7 @@ import { SlingshotController } from './controls/slingshot.js';
 import { SoundFX } from './audio/soundFX.js';
 import { OrientationManager } from './controls/orientation.js';
 import { PWAManager } from './controls/pwaManager.js';
+import { MobileUXManager } from './controls/mobileUX.js';
 import { NetworkClient } from './network/networkClient.js';
 import { TurnManager } from './network/turnManager.js';
 
@@ -27,9 +28,13 @@ export class Game {
       soundFX: this.soundFX
     });
 
-    // Orientasi Layar & PWA Manager
+    // Orientasi Layar, PWA & Mobile UX Manager
     this.orientation = new OrientationManager();
     this.pwa = new PWAManager();
+    this.mobileUX = new MobileUXManager({
+      soundFX: this.soundFX,
+      getGameInstance: () => this
+    });
 
     // Game Mode & Network
     this.gameMode = 'SOLO'; // 'SOLO' | 'LOCAL_2P' | 'ONLINE'
@@ -343,6 +348,14 @@ export class Game {
     const btnSettings = document.getElementById('btn-settings');
     const btnRematch = document.getElementById('btn-rematch');
     const btnEndToMenu = document.getElementById('btn-end-to-menu');
+    const btnEmote = document.getElementById('btn-emote');
+
+    if (btnEmote) {
+      btnEmote.addEventListener('click', () => {
+        this.mobileUX.toggleEmoteBar();
+        this.soundFX.triggerHaptic('light');
+      });
+    }
 
     if (btnReady) {
       btnReady.addEventListener('click', () => this.toggleUserReady());
@@ -490,14 +503,7 @@ export class Game {
     if (btnRoomCopy) {
       btnRoomCopy.addEventListener('click', () => {
         const roomId = this.roomId || (inputRoom && inputRoom.value ? inputRoom.value.trim().toUpperCase() : 'BOLA1');
-        const shareUrl = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(shareUrl).then(() => {
-            btnRoomCopy.textContent = 'TERSALIN! ✓';
-            setTimeout(() => { btnRoomCopy.textContent = '📋 SALIN LINK'; }, 2000);
-            this.soundFX.playBoing(1.3);
-          });
-        }
+        this.mobileUX.shareRoom(roomId);
       });
     }
 
@@ -549,13 +555,7 @@ export class Game {
     if (btnShareRoom) {
       btnShareRoom.addEventListener('click', () => {
         const roomId = this.roomId || (inputRoom && inputRoom.value ? inputRoom.value.trim().toUpperCase() : 'BOLA1');
-        const shareUrl = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(shareUrl).then(() => {
-            this.physics.addCallout(this.VIRTUAL_WIDTH / 2, 70, 'LINK ROOM DISALIN! 📋', '#38BDF8');
-            this.soundFX.playBoing(1.4);
-          });
-        }
+        this.mobileUX.shareRoom(roomId);
       });
     }
 
@@ -925,7 +925,7 @@ export class Game {
     this.turnManager.setGoalPhase();
     this.cameraShake = 18;
     this.soundFX.playGoalHorn();
-    this.soundFX.triggerHaptic(90);
+    this.soundFX.triggerHaptic('goal');
 
     if (scoringTeam === 'RED') {
       this.scoreRed++;
@@ -1066,10 +1066,25 @@ export class Game {
       winnerText.textContent = winningTeam === 'RED' ? '🏆 TIM MERAH (THE STRIKERS) JUARA!' : '🏆 TIM BIRU (THE ROVERS) JUARA!';
       winnerText.style.color = winningTeam === 'RED' ? '#EF4444' : '#3B82F6';
 
-      // Hitung MVP
+      // Hitung MVP & Catat Hasil Pertandingan ke Mobile Profile
       const mvp = this.entities.reduce((best, curr) => (curr.matchStats.goals > best.matchStats.goals ? curr : best), this.entities[0]);
       mvpText.textContent = `MVP Pertandingan: ${mvp.def.name} (#${mvp.number}) - ${mvp.matchStats.goals} Gol`;
       endModal.classList.remove('hidden');
+
+      const isWin = winningTeam === this.userTeam;
+      const userChar = this.entities.find(e => e.isUser);
+      const userGoals = userChar ? userChar.matchStats.goals : 0;
+      const buffsTaken = this.entities.reduce((sum, c) => sum + (c.team === this.userTeam ? (c.matchStats?.pickups || 0) : 0), 0);
+
+      this.mobileUX.recordMatchResult({
+        isWin,
+        goalsScored: userGoals,
+        buffsTaken
+      });
+
+      if (isWin) {
+        this.soundFX.triggerHaptic('goal');
+      }
     }
   }
 
@@ -1320,6 +1335,11 @@ export class Game {
       this.ctx.fillRect(p.x, p.y, p.size, p.size);
     });
 
+    // 5.1 Gambar Floating Mobile Reaction Emotes
+    if (this.mobileUX) {
+      this.mobileUX.updateAndRenderEmotes(this.ctx, performance.now());
+    }
+
     this.ctx.restore();
 
     // 6. Gambar Live Preview Canvas Karakter
@@ -1482,6 +1502,12 @@ export class Game {
         this.scoreRed = data.scoreRed;
         this.scoreBlue = data.scoreBlue;
         this.updateScoreUI();
+        break;
+
+      case 'EMOTE':
+        if (this.mobileUX) {
+          this.mobileUX.triggerEmote(data.emoji, { x: data.x, y: data.y });
+        }
         break;
     }
   }

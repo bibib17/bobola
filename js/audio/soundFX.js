@@ -368,10 +368,34 @@ export class SoundFX {
     });
   }
 
-  triggerHaptic(duration = 25) {
+  triggerHaptic(type = 'light') {
+    // 1. Capacitor Native Mobile Haptics
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Haptics) {
+      try {
+        const Haptics = window.Capacitor.Plugins.Haptics;
+        if (type === 'heavy' || type === 'goal') {
+          Haptics.impact({ style: 'HEAVY' });
+        } else if (type === 'medium' || type === 'kick') {
+          Haptics.impact({ style: 'MEDIUM' });
+        } else {
+          Haptics.impact({ style: 'LIGHT' });
+        }
+        return;
+      } catch (e) {}
+    }
+
+    // 2. Web Vibration API Fallback
     if (navigator.vibrate) {
       try {
-        navigator.vibrate(duration);
+        if (type === 'goal') {
+          navigator.vibrate([60, 40, 90, 40, 150]);
+        } else if (type === 'heavy') {
+          navigator.vibrate(45);
+        } else if (type === 'kick') {
+          navigator.vibrate(28);
+        } else {
+          navigator.vibrate(typeof type === 'number' ? type : 18);
+        }
       } catch (e) {}
     }
   }

@@ -1,0 +1,44 @@
+{
+  "name": "bolabola-league",
+  "version": "1.1.0",
+  "description": "BolaBola League - Turn-Based Simultaneous Physics Tabletop Soccer Game for Mobile (iOS & Android) and Web PWA",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test_mobile_pwa.js",
+    "generate-icons": "node generate_pwa_icons.js",
+    "cap:sync": "npx cap sync",
+    "cap:android": "npx cap open android",
+    "cap:ios": "npx cap open ios",
+    "cap:run:android": "npx cap run android",
+    "cap:run:ios": "npx cap run ios"
+  },
+  "keywords": [
+    "game",
+    "soccer",
+    "physics",
+    "tabletop",
+    "pwa",
+    "mobile",
+    "android",
+    "ios",
+    "capacitor",
+    "turn-based",
+    "bobble-league"
+  ],
+  "author": "bibib17",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2",
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/ios": "^6.1.2",
+    "@capacitor/haptics": "^6.0.2",
+    "@capacitor/screen-orientation": "^6.0.2",
+    "@capacitor/status-bar": "^6.0.2"
+  }
+}
